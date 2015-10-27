@@ -577,6 +577,8 @@ class CrudHelper
 				'Singular'		=> ucwords($model->singular),
 				'plural'		=> $model->plural,
 				'Plural'		=> ucwords($model->plural),
+				'title'			=> $model->title ? $this->data->{$model->title} : null,
+				'Title'			=> $model->title ? ucwords($this->data->{$model->title}) : null,
 
 				// fields
 				'fields'		=> $fields,
