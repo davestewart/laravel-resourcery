@@ -4,8 +4,9 @@ use Eloquent;
 use Illuminate\Http\Response;
 
 /**
- * Class CrudMethods
- * @package davestewart\laravel\crud
+ * CrudMethods trait
+ *
+ * Use in resource controller to setup all CRUD functionality
  */
 trait CrudMethods
 {
@@ -13,12 +14,26 @@ trait CrudMethods
 	// -----------------------------------------------------------------------------------------------------------------
 	// PROPERTIES
 
-		/** @var CrudHelper crud */
+		/** @var CrudService crud */
 		protected $crud;
 
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// PUBLIC PROPERTIES
+
+		/**
+		 * Setup function
+		 *
+		 * @param CrudMeta $meta
+		 */
+		protected function setup(CrudMeta $meta, $debug = false)
+		{
+			$this->crud = \App::make('CrudService')->initialize($meta);
+			if($debug)
+			{
+				$this->crud->debug();
+			}
+		}
 
 		/**
 		 * Display a listing of the resource.
@@ -27,7 +42,7 @@ trait CrudMethods
 		 */
 		public function index()
 		{
-			return $this->crud->index()->result;
+			return $this->crud->index()->response;
 		}
 	
 		/**
@@ -37,7 +52,7 @@ trait CrudMethods
 		 */
 		public function create()
 		{
-			return $this->crud->create()->result;
+			return $this->crud->create()->response;
 		}
 	
 		/**
@@ -47,7 +62,7 @@ trait CrudMethods
 		 */
 		public function store()
 		{
-			return $this->crud->store()->result;
+			return $this->crud->store()->response;
 		}
 
 		/**
@@ -58,7 +73,7 @@ trait CrudMethods
 		 */
 		public function show($id)
 		{
-			return $this->crud->show($id)->result;
+			return $this->crud->show($id)->response;
 		}
 	
 		/**
@@ -69,7 +84,7 @@ trait CrudMethods
 		 */
 		public function edit($id)
 		{
-			return $this->crud->edit($id)->result;
+			return $this->crud->edit($id)->response;
 		}
 	
 		/**
@@ -80,7 +95,7 @@ trait CrudMethods
 		 */
 		public function update($id)
 		{
-			return $this->crud->update($id)->result;
+			return $this->crud->update($id)->response;
 		}
 	
 		/**
@@ -91,7 +106,7 @@ trait CrudMethods
 		 */
 		public function destroy($id)
 		{
-			return $this->crud->destroy($id)->result;
+			return $this->crud->destroy($id)->response;
 		}
 
 }
