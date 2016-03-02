@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ViewErrorBag;
+use Validator;
 use Redirect;
 use Request;
 use Response;
@@ -45,6 +46,14 @@ class CrudService
 		 */
 		protected $action;
 
+
+		/**
+		 * Any custom view
+		 *
+		 * @var
+		 */
+		protected $view;
+
 		/**
 		 * Any response that's been generated
 		 *
@@ -80,6 +89,13 @@ class CrudService
 		protected $data;
 
 		/**
+		 * Additional values to be set on the view
+		 *
+		 * @var \Illuminate\Contracts\Support\Arrayable
+		 */
+		protected $values;
+
+		/**
 		 * Any errors generated during validation
 		 *
 		 * @var array
@@ -109,7 +125,8 @@ class CrudService
 		 */
 		public function __construct()
 		{
-
+			$this->values   = [];
+			$this->loaded   = false;
 		}
 
 		/**
@@ -126,6 +143,7 @@ class CrudService
 
 			// repo
 			$this->repo     = \App::make('CrudRepo')->initialize($meta);
+			//$this->values   = \App::make('CrudValues')->initialize($meta);
 
 			// route
 			if( ! $route )
@@ -153,80 +171,46 @@ class CrudService
 
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// ACCESSORS
-
-		/**
-		 * @param string $name
-		 * @return self|\Symfony\Component\HttpFoundation\Response
-		 * @throws \Exception
-		 */
-		public function __get($name)
-		{
-			switch($name)
-			{
-				case 'response':
-					return $this->makeResponse();
-					break;
-
-				case 'json':
-					return $this->makeJson();
-					break;
-
-				case 'view':
-					return $this->makeView();
-					break;
-			}
-
-			// error if invalid property
-			throw new \Exception("Property '$name' does not exist");
-		}
-
-
-	// -----------------------------------------------------------------------------------------------------------------
 	// CONTROLLER METHODS
 
 		/**
 		 * Display a listing of the resource.
 		 *
-		 * @param   mixed   $data
+		 * @param   mixed|null  $data
 		 * @return  self
 		 */
 		public function index($data = null)
 		{
-			$this->action       = 'index';
-			$this->data		    = is_object($data)
-									? $data
-									: $this->repo->all($this->meta->pagination, $this->meta->getRelated('index'));
+			$this->setAction('index');
+			$this->setData(is_object($data)
+				? $data
+				: $this->repo->all($this->meta->pagination, $this->meta->getRelated('index')));
 			return $this;
 		}
 
 		/**
 		 * Display the specified resource.
 		 *
-		 * @param  int  $id
+		 * @param  int|object   $id
 		 * @return self
 		 */
 		public function show($id)
 		{
-			$this->action	    = 'show';
-			$this->data		    = is_object($id)
-									? $id
-									: $this->repo->find($id);
+			$this->setAction('show');
+			$this->setData($this->resolveId($id));
 			return $this;
 		}
 
 		/**
 		 * Show the form for editing the specified resource.
 		 *
-		 * @param  int  $id
+		 * @param  int|object   $id
 		 * @return self
 		 */
 		public function edit($id)
 		{
-			$this->action	    = 'edit';
-			$this->data		    = is_object($id)
-									? $id
-									: $this->repo->find($id);
+			$this->setAction('edit');
+			$this->setData($this->resolveId($id));
 			return $this;
 		}
 
@@ -237,7 +221,7 @@ class CrudService
 		 */
 		public function create()
 		{
-			$this->action       ='create';
+			$this->setAction('create');
 			return $this;
 		}
 
@@ -273,7 +257,7 @@ class CrudService
 		public function destroy($id)
 		{
 			// properties
-			$this->action       = 'destroy';
+			$this->setAction('destroy');
 
 			// delete
 			$this->repo->destroy($id);
@@ -286,19 +270,93 @@ class CrudService
 			return $this;
 		}
 
-		public function view($name, $data = null)
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// OVERRIDES
+
+		/**
+		 * Explicitly set the action
+		 *
+		 * @param   $action
+		 * @return  self
+		 */
+		public function setAction($action)
 		{
-			$this->action = $name;
-			if($data)
+			$this->action = $action;
+			return $this;
+		}
+
+		/**
+		 * Explicitly sets the view
+		 *
+		 * @param   string  $path
+		 * @return  self;
+		 */
+		public function setView($path)
+		{
+			$this->view = $path;
+			return $this;
+		}
+
+		/**
+		 * Explicitly sets the data
+		 *
+		 * @param   mixed   $data
+		 * @return  self;
+		 */
+		public function setData($data)
+		{
+			$this->data = $data;
+			return $this;
+		}
+
+		/**
+		 * Sets additional view values
+		 *
+		 * @param   array   $values
+		 * @return  self;
+		 */
+		public function setValues($values)
+		{
+			$this->values = array_merge($this->values, $values);
+			return $this;
+		}
+
+		/**
+		 * Validates alternative input and optionally, rules
+		 *
+		 * @param   array           $input
+		 * @param   array|null      $rules
+		 * @return  bool
+		 */
+		public function validate($input, $rules = null)
+		{
+			// reset
+			$this->errors = null;
+
+			// validate
+			$validator = $rules
+				? Validator::make($input, $rules)
+				: $this->meta->validate($input);
+
+			// actions
+			if ($validator->fails())
 			{
-				$this->data = $data;
+				// properties
+				$this->message	= $this->meta->getMessage('invalid');
+				$this->errors	= $validator->errors();
+
+				// build response
+				$this->response = Redirect::back()
+					->withErrors($validator)
+					->withInput($this->getInput($input));
 			}
-			return $this->makeView();
+			return $this;
 		}
 
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// DATA
+	// VIEW DATA
 
 		/**
 		 * Get the loaded data
@@ -343,16 +401,21 @@ class CrudService
 			];
 
 			// text
-			$text =
+			$words =
 			[
 				'action'		=> $this->action,
-				'title'			=> $this->meta->getTitle($data),
 				'singular'		=> $meta->singular,
 				'plural'		=> $meta->plural,
+				'title'			=> $this->meta->getTitle($data),
 			];
 
 			// add Capitalized Versions of text
-			foreach($text as $key => $value) { $text[ucwords($key)] = ucwords($value); }
+			$text = [];
+			foreach($words as $key => $value)
+			{
+				$text[$key] = $value;
+				$text[ucwords($key)] = ucwords($value);
+			}
 
 			// fields
 			$views =
@@ -361,7 +424,7 @@ class CrudService
 			];
 
 			// return
-			return array_merge($props, $text, $views);
+			return array_merge($props, $text, $views, $this->values);
 		}
 
 		/**
@@ -408,38 +471,38 @@ class CrudService
 		}
 
 
-
 	// -----------------------------------------------------------------------------------------------------------------
-	// VALIDATION AND SAVING
+	// ACCESSORS
 
 		/**
-		 * Validates input
-		 * @param   array       $input
-		 * @return  bool
+		 * @param string $name
+		 * @return self|\Symfony\Component\HttpFoundation\Response
+		 * @throws \Exception
 		 */
-		protected function validate($input)
+		public function __get($name)
 		{
-			// reset
-			$this->errors = null;
-
-			// validate
-			$validator = $this->meta->validate($input);
-			if ($validator->fails())
+			switch($name)
 			{
-				// properties
-				$this->message	= $this->meta->getMessage('invalid');
-				$this->errors	= $validator->errors();
+				case 'response':
+					return $this->makeResponse();
+					break;
 
-				// build response
-				$this->response = Redirect::back()
-					->withErrors($validator)
-					->withInput($this->getInput($input));
+				case 'json':
+					return $this->makeJson();
+					break;
 
-				// fail
-				return false;
+				case 'view':
+					return $this->makeView();
+					break;
 			}
-			return true;
+
+			// error if invalid property
+			throw new \Exception("Property '$name' does not exist");
 		}
+
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// MODEL DATA
 
 		/**
 		 * Orchestrates validation and saving
@@ -469,12 +532,12 @@ class CrudService
 				// persist data
 				if($action == 'store')
 				{
-					$this->data			= $this->repo->store($input);
+					$this->setData($this->repo->store($input));
 					$this->message		= $this->meta->getMessage('created');
 				}
 				else if($action == 'update')
 				{
-					$this->data			= $this->repo->update($id, $input);
+					$this->setData($this->repo->update($id, $input));
 					$this->message		= $this->meta->getMessage('updated');
 				}
 
@@ -514,6 +577,13 @@ class CrudService
 			$this->loaded = true;
 		}
 
+		protected function resolveId($id)
+		{
+			return is_object($id)
+				? $id
+				: $this->repo->find($id);
+		}
+
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// RESPONSES
@@ -544,20 +614,27 @@ class CrudService
 
 		/**
 		 * Builds and returns a View response
-		 * @return View
-		 * @throws \Exception
+		 *
+		 * @param   null|string     $path       The path to a view file
+		 * @return  View
+		 * @throws  \Exception
 		 */
-		protected function makeView()
+		protected function makeView($path = null)
 		{
-			if( ! $this->action )
+			if( ! $this->action && $path == null)
 			{
-				throw new \Exception('A view cannot be shown as a view/action has not yet been set. Call one of the 4 main crud methods(index, show, create, edit), or view($name) to force a view' );
+				throw new \Exception('A view cannot be constructed as a CRUD method has not yet been called. Call one of the 4 main crud methods(index, show, create, edit) to force a view' );
+			}
+
+			if($path == null)
+			{
+				$path = $this->view
+					? $this->view
+					: $this->meta->getView($this->action);
 			}
 
 			// return view
-			return View
-				::make($this->meta->getView($this->action))
-				->with($this->getViewData());
+			return View::make($path, $this->getViewData());
 		}
 
 		/**
