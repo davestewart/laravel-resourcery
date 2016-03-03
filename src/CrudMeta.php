@@ -1,7 +1,5 @@
 <?php namespace davestewart\laravel\crud;
 
-use davestewart\laravel\crud\CrudField;
-
 use Illuminate\Support\MessageBag;
 use Input;
 use Symfony\Component\Routing\Exception\InvalidParameterException;

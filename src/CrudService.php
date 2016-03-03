@@ -20,10 +20,10 @@ use View;
  *
  * Magic response properties:
  *
- * @property 	string saved
- * @property 	\Symfony\Component\HttpFoundation\Response response
- * @property 	\Symfony\Component\HttpFoundation\JsonResponse json
- * @property 	\Illuminate\Support\Facades\View view
+ * @property 	string                                         $success
+ * @property 	\Symfony\Component\HttpFoundation\Response     $response
+ * @property 	\Symfony\Component\HttpFoundation\JsonResponse $json
+ * @property 	\Illuminate\Support\Facades\View               $view
  */
 class CrudService
 {
@@ -123,7 +123,7 @@ class CrudService
 		 *
 		 * @var bool
 		 */
-		protected $saved;
+		protected $success;
 
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -449,17 +449,18 @@ class CrudService
 		public function getViewData()
 		{
 			// base values
-			$values             = $this->getValues();
-			$values['fields']   = $this->getFields();
+			$values         = $this->getValues();
+			$fields         = $this->getFields();
+			$data           = $this->getData();
 
-			// values, data, and nested values (so they can be dumped in the view)
-			$values			    = array_merge($values, ['data' => $this->getData(), 'values' => $values]);
+			// payload
+			$payload        = $values + compact('values', 'fields', 'data');
 
 			// debug
-			//pr($values);
+			//pr($payload);
 
 			// return
-			return $values;
+			return $payload;
 		}
 
 		/**
@@ -497,8 +498,8 @@ class CrudService
 		{
 			switch($name)
 			{
-				case 'saved':
-					return $this->saved;
+				case 'success':
+					return $this->success;
 					break;
 
 				case 'response':
@@ -561,7 +562,7 @@ class CrudService
 				//pd('data', $this->data);
 
 				// update response
-				$this->saved            = true;
+				$this->success            = true;
 				$this->response		    = $this->makeRedirect();
 			}
 
