@@ -4,6 +4,7 @@ use davestewart\laravel\crud\CrudField;
 
 use Illuminate\Support\MessageBag;
 use Input;
+use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Validator;
 
 /**
@@ -20,7 +21,7 @@ use Validator;
  * @property string[] 	$labels		    Property
  * @property string[] 	$messages		Property
  * @property string[] 	$rules		    Property
- * @property string[]   $secret         Property
+ * @property string[]   $hidden         Property
  *
  */
 class CrudMeta
@@ -34,7 +35,7 @@ class CrudMeta
 		 *
 		 * @var string
 		 */
-		protected $class        = '\Models\ItemModel';
+		protected $class        = '\App\Models\Item';
 
 		/**
 		 * Paths to the view files that will render your model's data (defaults to
@@ -91,23 +92,26 @@ class CrudMeta
 	// FORM
 
 		/**
-		 * Fields to show on each page
+		 * Fields to show for each action:
 		 *
-		 * Should be an array of the form $view => $fields, using a string or array:
+		 * Should be an array of space-separated strings (or an array of arrays) of the form $action => $fields:
 		 *
 		 *  - 'index' => 'username email created_date'
-		 *  - 'index' => ['username', 'email', 'created_date']
 		 *
-		 * Space-separated strings will be converted to arrays before being injected into the view
+		 * You may also use the following placeholders to mirror your model's setup:
 		 *
-		 * @var string[]|array[]
+		 * - :all           All fields
+		 * - :visible       All visible fields
+		 * - :fillable      All fillable fields
+		 *
+		 * @var string[]
 		 */
 		protected $fields =
 		[
-			'index'			    => '',
-			'create'		    => '',
-			'show'			    => '',
-			'edit'			    => '',
+			'index'			    => ':visible',
+			'create'		    => ':fillable',
+			'edit'			    => ':fillable',
+			'show'			    => ':visible',
 		];
 
 		/**
@@ -115,27 +119,29 @@ class CrudMeta
 		 *
 		 * Should be an array of the form $field => $type:
 		 *
-		 * - 'username'     => 'text'
-		 * - 'clientId'     => 'select'
+		 * - 'username' => 'text'
+		 * - 'clientId' => 'email'
 		 *
 		 * Use any available types that your view or view library can render
 		 *
-		 * To specify different control types for different views, prefix the control type with the view name:
+		 * If a control (such as a select) requires additional options to render, specify a getter function:
 		 *
-		 * - 'clientId'     => 'create:select edit:radios'
+		 * - 'clientId' => 'select:getClientIds'
 		 *
-		 * If a control (such as a dropdown) requires additional options to render, specify a getter
-		 * function using a colon:
+		 * To specify different control types for different views, prefix the control type with the action:
 		 *
-		 * - 'clientId'     => 'select:getClientIds'
-		 * - 'clientId'     => 'create:select edit:radios options:getClientIds'
+		 * - 'clientId' => 'create:select edit:radios'
 		 *
-		 * The getClientIds($model, $action) callback should be available as a class method, and should return
+		 * To include control options, use the special value 'options:callback':
+		 *
+		 * - 'clientId' => 'create:select edit:radios options:getClientIds'
+		 *
+		 * Callbacks should be available as a class method, of the format function($model, $action) and should return
 		 * an associative array of $value => $label pairs. PHP's array_column() provides a neat way to do this!
 		 *
 		 * At some point the following syntax to call a getter on the related model may be supported:
 		 *
-		 * - 'clientId'     => 'dropdown:client.all'
+		 * - 'clientId' => 'dropdown:client[id/name]'
 		 *
 		 * @var string[]
 		 */
@@ -199,7 +205,7 @@ class CrudMeta
 		 *
 		 * @var string[]
 		 */
-		protected $secret =
+		protected $hidden =
 		[
 			'password',
 			'password_confirm'
@@ -208,9 +214,56 @@ class CrudMeta
 	// -----------------------------------------------------------------------------------------------------------------
 	// INSTANTIATION
 
-		public function __construct()
+		public function __construct($class = null)
 		{
+			if($class)
+			{
+				$this->class = $class;
+			}
+		}
 
+		public function initialize($fields)
+		{
+			// variables
+			$types = array_keys($fields);
+
+			// expand fields with :placeholders
+			foreach($this->fields as $key => $value)
+			{
+				$type = substr($value, 1);
+				if(in_array($type, $types))
+				{
+					$values = count($fields[$type])
+						? $fields[$type]
+						: $fields['all'];
+					$this->fields[$key] = implode(' ', $values);
+				}
+			}
+
+			// update hidden fields
+			$this->hidden = array_values(array_unique(array_merge($this->hidden, $fields['hidden'])));
+		}
+
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// ACCESSORS
+
+		public function __get($name)
+		{
+			if(property_exists($this, $name))
+			{
+				return $this->$name;
+			}
+			throw new InvalidParameterException("Property $name does not exist");
+		}
+
+		public function __set($name, $value)
+		{
+			if( ! property_exists($this, $name) )
+			{
+				throw new InvalidParameterException("Property $name does not exist");
+			}
+			$this->$name = $value;
 		}
 
 
@@ -225,24 +278,6 @@ class CrudMeta
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// GETTERS
-
-		public function __get($name)
-		{
-			if(property_exists($this, $name))
-			{
-				return $this->$name;
-			}
-		}
-
-		/**
-		 * Returns this instance as an object
-		 *
-		 * @return  object
-		 */
-		public function getMeta()
-		{
-			return (object) $this;
-		}
 
 		/**
 		 * Gets any related tables used in the $fields attribute for the specified action
@@ -264,7 +299,7 @@ class CrudMeta
 		 */
 		public function getMessage($type)
 		{
-			return str_replace(':item', $this->messages[$type], $this->singular);
+			return str_replace(':item', $this->singular, $this->messages[$type]);
 		}
 
 		/**
@@ -353,9 +388,17 @@ class CrudMeta
 			/** @var CrudField */
 			$field                  = \App::make('CrudField');
 
-			// values
+			// meta
 			$field->name            = $name;
 			$field->label           = $this->getLabel($name);
+
+			// value
+			if($action !== 'index')
+			{
+				$field->value       = in_array($name, $this->hidden)
+										? ''
+										: $this->getProperty($data, $name);
+			}
 
 			// control
 			if($action === 'create' || $action === 'edit')
@@ -375,21 +418,15 @@ class CrudMeta
 				// errors
 				if($errors && $errors->has($name))
 				{
-					$field->error   = $errors->first($name);
+					$field->error       = $errors->first($name);
 				}
 
 				// old values
-				$old                = Input::old($name);
-				$field->old         = $old ? $old : $data->$name;
+				$old                    = Input::old($name);
+				$field->old             = $old ? $old : $field->value;
 
 				// attributes
-				$field->rules       = $this->rules[$name];
-			}
-
-			// set model if not index
-			if($action !== 'index')
-			{
-				$field->model = $data;
+				$field->rules           = $this->rules[$name];
 			}
 
 			// return
@@ -447,5 +484,19 @@ class CrudMeta
 			// return
 			return $control;
 		}
+
+		protected function getProperty($model, $path)
+		{
+			if(is_string($path))
+			{
+				if(strstr($path, '.') === FALSE)
+				{
+					return $model->$path;
+				}
+				$path = explode('.', $path);
+			}
+			return array_reduce($path, function($obj, $name){ return $obj->$name; }, $model);
+		}
+
 
 }

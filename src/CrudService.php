@@ -20,6 +20,7 @@ use View;
  *
  * Magic response properties:
  *
+ * @property 	string saved
  * @property 	\Symfony\Component\HttpFoundation\Response response
  * @property 	\Symfony\Component\HttpFoundation\JsonResponse json
  * @property 	\Illuminate\Support\Facades\View view
@@ -117,6 +118,14 @@ class CrudService
 		protected $loaded;
 
 
+		/**
+		 * Flag to store whether the data was saved
+		 *
+		 * @var bool
+		 */
+		protected $saved;
+
+
 	// -----------------------------------------------------------------------------------------------------------------
 	// INSTANTIATION
 
@@ -142,8 +151,11 @@ class CrudService
 			$this->meta     = $meta;
 
 			// repo
-			$this->repo     = \App::make('CrudRepo')->initialize($meta);
+			$this->repo     = \App::make('CrudRepo')->initialize($meta->class);
 			//$this->values   = \App::make('CrudValues')->initialize($meta);
+
+			// initialize meta
+			$this->meta->initialize($this->repo->getFields());
 
 			// route
 			if( ! $route )
@@ -157,6 +169,7 @@ class CrudService
 
 		public function debug()
 		{
+			pr('CrudService::debug() is now listening for database calls...');
 			DB::listen(function($sql, $bindings, $duration)
 			{
 				$data =
@@ -165,8 +178,9 @@ class CrudService
 					'start'     => round((microtime(true) - LARAVEL_START) * 1000, 2),
 					'timed'     => $duration,
 				];
-				pr($data);
+				pr('Database call', $data);
 			});
+			return $this;
 		}
 
 
@@ -184,7 +198,7 @@ class CrudService
 			$this->setAction('index');
 			$this->setData(is_object($data)
 				? $data
-				: $this->repo->all($this->meta->pagination, $this->meta->getRelated('index')));
+				: $this->repo->all($this->meta->pagination));
 			return $this;
 		}
 
@@ -391,7 +405,7 @@ class CrudService
 		{
 			// prepare data
 			$data               = $this->getData();
-			$meta               = $this->meta->getMeta();
+			$meta               = (object) $this->meta;
 
 			// state
 			$props =
@@ -449,7 +463,7 @@ class CrudService
 		}
 
 		/**
-		 * Returns a copy of the input data, minus secret fields
+		 * Returns a copy of the input data, minus hidden fields
 		 *
 		 * @param $input
 		 * @return array
@@ -457,7 +471,7 @@ class CrudService
 		public function getInput($input)
 		{
 			$input = array_merge([], $input);
-			array_forget($input, $this->meta->secret);
+			array_forget($input, $this->meta->hidden);
 			return $input;
 		}
 
@@ -476,13 +490,17 @@ class CrudService
 
 		/**
 		 * @param string $name
-		 * @return self|\Symfony\Component\HttpFoundation\Response
+		 * @return self|bool|\Symfony\Component\HttpFoundation\Response
 		 * @throws \Exception
 		 */
 		public function __get($name)
 		{
 			switch($name)
 			{
+				case 'saved':
+					return $this->saved;
+					break;
+
 				case 'response':
 					return $this->makeResponse();
 					break;
@@ -532,16 +550,18 @@ class CrudService
 				// persist data
 				if($action == 'store')
 				{
-					$this->setData($this->repo->store($input));
+					$this->repo->store($input);
 					$this->message		= $this->meta->getMessage('created');
 				}
 				else if($action == 'update')
 				{
-					$this->setData($this->repo->update($id, $input));
+					$this->repo->update($id, $input);
 					$this->message		= $this->meta->getMessage('updated');
 				}
+				//pd('data', $this->data);
 
 				// update response
+				$this->saved            = true;
 				$this->response		    = $this->makeRedirect();
 			}
 

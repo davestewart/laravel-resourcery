@@ -4,9 +4,9 @@ use davestewart\laravel\crud\CrudMeta;
 
 interface CrudRepo
 {
-	public function initialize(CrudMeta $meta);
+	public function initialize($class);
 
-	public function all($limit = null, array $related = null);
+	public function all($limit = null);
 
 	public function find($id);
 
@@ -15,5 +15,7 @@ interface CrudRepo
 	public function store($data);
 
 	public function destroy($id);
+
+	public function getFields();
 
 }

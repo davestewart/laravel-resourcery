@@ -34,23 +34,15 @@ class CrudField
 		/** @var string[] */
 		protected $options;
 
-		/** @var string */
-		protected $error;
-
 		/** @var string[] */
 		protected $rules;
 
-		/** @var object */
-		protected $model;
+		/** @var string */
+		protected $error;
 
 
 	// ------------------------------------------------------------------------------------------------
-	// INSTANTIATION
-
-		public function __construct()
-		{
-
-		}
+	// ACCESSORS
 
 		public function __set($name, $value)
 		{
@@ -62,15 +54,7 @@ class CrudField
 
 		public function __get($name)
 		{
-			if($name === 'value')
-			{
-				if( ! isset($this->model) )
-				{
-					throw new \Exception('Cannot get field value, as the $model property was never set');
-				}
-				return $this->getDotProp($this->model, $this->name);
-			}
-			else if(property_exists($this, $name))
+			if(property_exists($this, $name))
 			{
 				return $this->$name;
 			}
@@ -93,6 +77,5 @@ class CrudField
 			}
 			return array_reduce($names, function($obj, $name){ return $obj->$name; }, $obj);
 		}
-
 
 }

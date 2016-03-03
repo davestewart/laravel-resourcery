@@ -24,11 +24,21 @@ trait CrudMethods
 		/**
 		 * Setup function
 		 *
-		 * @param CrudMeta $meta
+		 * @param CrudMeta|string   $meta
+		 * @param bool              $debug
 		 */
-		protected function setup(CrudMeta $meta, $debug = false)
+		protected function setup($meta, $debug = false)
 		{
+			// parameters
+			if(is_string($meta))
+			{
+				$meta = new CrudMeta($meta);
+			}
+
+			// setup
 			$this->crud = \App::make('CrudService')->initialize($meta);
+
+			// debugging
 			if($debug)
 			{
 				$this->crud->debug();

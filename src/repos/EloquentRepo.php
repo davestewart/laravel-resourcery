@@ -23,14 +23,16 @@ class EloquentRepo implements CrudRepo
 	// -----------------------------------------------------------------------------------------------------------------
 	// INSTANTIATION
 
-		public function __construct()
+		/**
+		 * Initialize the repo with a model's class
+		 *
+		 * @param   string      $class      A model class
+		 * @return  array
+		 * @throws  \Exception
+		 */
+		public function initialize($class)
 		{
-
-		}
-
-		public function initialize(CrudMeta $meta)
-		{
-			$this->class = $meta->class;
+			$this->class = $class;
 			return $this;
 		}
 
@@ -41,20 +43,12 @@ class EloquentRepo implements CrudRepo
 		/**
 		 * Get all items
 		 * 
-		 * @param int        $limit
-		 * @param array|null $related
+		 * @param int               $limit
 		 *
 		 * @return Collection
 		 */
-		public function all($limit = null, array $related = null)
+		public function all($limit = null)
 		{
-			if($related)
-			{
-				$query = $this->query('with', $related);
-				return $limit == null
-					? $query->all()
-					: $query->paginate($limit);
-			}
 			return $limit == null
 				? $this->query('all')
 				: $this->query('paginate', $limit);
@@ -68,13 +62,11 @@ class EloquentRepo implements CrudRepo
 		 */
 		public function find($id)
 		{
-			return $id instanceof Eloquent
-				? $id
-				: $this->query('findOrFail', $id);
+			return $this->query('findOrFail', $id);
 		}
 
 		/**
-		 * @param   Eloquent|int    $id
+		 * @param   int             $id
 		 * @param   array           $data
 		 * @return  Eloquent
 		 */
@@ -89,16 +81,41 @@ class EloquentRepo implements CrudRepo
 		 */
 		public function store($data)
 		{
-			return $this->query('store', $data);
+			return $this->query('create', $data);
 		}
 
 		/**
-		 * @param   Eloquent|int    $id
+		 * @param   int             $id
 		 * @return  Eloquent
 		 */
 		public function destroy($id)
 		{
 			return $this->find($id)->delete();
+		}
+
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// UTILITIES
+
+		/**
+		 * Get the fields for an Eloquent model (used mainly by the CrudMeta constructor)
+		 *
+		 * @return  string[]                An array of field names for different types of view
+		 */
+		public function getFields()
+		{
+			/** @var Eloquent $model */
+			$model          = \App::make($this->class);
+			$data           =
+			[
+				'all'		=> $model->getConnection()->getSchemaBuilder()->getColumnListing($model->getTable()),
+				'visible'	=> $model->getVisible(),
+				'fillable'	=> $model->getFillable(),
+				'hidden'    => $model->getHidden(),
+			];
+
+			// return
+			return $data;
 		}
 
 
@@ -112,36 +129,14 @@ class EloquentRepo implements CrudRepo
 		 * @param   $parameters,... mixed   unlimited OPTIONAL number of additional variables to display
 		 * @return  Collection|Eloquent
 		 */
-		protected function query($method, &$parameters = null)
+		protected function query($method, $parameters = null)
 		{
-			$model = $this->class . '::' . $method;
-			if(isset($parameters))
+			$callable = $this->class . '::' . $method;
+			if(func_num_args() > 1)
 			{
-				$params = array_slice(func_get_args(), 1);
-				return call_user_func_array($model, $params);
+				return call_user_func_array($callable, array_slice(func_get_args(), 1));
 			}
-			else
-			{
-				return call_user_func($model);
-			}
-		}
-
-		protected function paginateRelated($query, $limit, $related)
-		{
-			// Get all records.
-			$results    = $this->query($query);
-
-			// Get pagination information and slice the results.
-			$total      = count($results);
-			$start      = (Paginator::getCurrentPage() - 1) * $limit;
-			$sliced     = array_slice($results, $start, $limit);
-
-			// Eager load the relation.
-			$collection = $this->query('hydrate', $sliced);
-			$collection->load($related);
-
-			// Create a paginator instance.
-			return Paginator::make($collection->all(), $total, $limit);
+			return call_user_func($callable);
 		}
 
 }
