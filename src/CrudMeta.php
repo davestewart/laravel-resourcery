@@ -313,9 +313,12 @@ class CrudMeta
 
 
 		/**
-		 * Returns the view path for the specified action
+		 * Returns the title for the entity
 		 *
-		 * @param   object  $model      The action to get view for
+		 * The method searches first for a `title` property on the model, then looks for a same-named property
+		 * as the `titleAttr` property on the Meta
+		 *
+		 * @param   object  $model      The model to use to determine the title
 		 * @return  string              The view path
 		 */
 		public function getTitle($model)
@@ -328,7 +331,9 @@ class CrudMeta
 		}
 
 		/**
-		 * Returns the view path for the specified action
+		 * Returns the label for a field
+		 *
+		 * The method first checks the `labels` array, then defaults to the ucwords version of the field name
 		 *
 		 * @param   string  $name       The action to get view for
 		 * @return  string              The view path
@@ -341,7 +346,7 @@ class CrudMeta
 		}
 
 		/**
-		 * Gets all form fields as an array of CrudField elements
+		 * Gets all form fields as an array of CrudField instances
 		 *
 		 * @param   string      $action     The resource action
 		 * @param   mixed       $data       The model
@@ -371,17 +376,17 @@ class CrudMeta
 			return $fields;
 		}
 
-	/**
-	 * Gets all form fields as an array of CrudField elements
-	 *
-	 * @param   string      $action     The resource action
-	 * @param   string      $name       The name of the field to build
-	 * @param   mixed       $data       The model
-	 * @param   MessageBag  $errors     Any validation errors
-	 * @return  CrudField
-	 * @throws  \Exception
-	 */
-	public function getField($action, $name, $data, $errors = null)
+		/**
+		 * Return a single field as a CrudField instance
+		 *
+		 * @param   string      $action     The resource action
+		 * @param   string      $name       The name of the field to build
+		 * @param   mixed       $data       The model
+		 * @param   MessageBag  $errors     Any validation errors
+		 * @return  CrudField
+		 * @throws  \Exception
+		 */
+		public function getField($action, $name, $data, $errors = null)
 		{
 			/** @var CrudField */
 			$field                  = \App::make('CrudField');
@@ -483,17 +488,24 @@ class CrudMeta
 			return $control;
 		}
 
-		protected function getProperty($model, $path)
+		/**
+		 * Utility function to resolve object properties, including from dot.notation paths
+		 *
+		 * @param   mixed   $model  The model to get the property form
+		 * @param   string  $prop   The property or path to resolve
+		 * @return  mixed           The resolved value
+		 */
+		protected function getProperty($model, $prop)
 		{
-			if(is_string($path))
+			if(is_string($prop))
 			{
-				if(strstr($path, '.') === FALSE)
+				if(strstr($prop, '.') === FALSE)
 				{
-					return $model->$path;
+					return $model->$prop;
 				}
-				$path = explode('.', $path);
+				$prop = explode('.', $prop);
 			}
-			return array_reduce($path, function($obj, $name){ return $obj->$name; }, $model);
+			return array_reduce($prop, function($obj, $name){ return $obj->$name; }, $model);
 		}
 
 
