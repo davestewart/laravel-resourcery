@@ -1,13 +1,12 @@
 <?php namespace davestewart\laravel\crud;
 
-use davestewart\laravel\crud\CrudMeta;
 use davestewart\laravel\crud\repos\CrudRepo;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ViewErrorBag;
-use URL;
+use Input;
 use Validator;
 use Redirect;
 use Request;
@@ -195,10 +194,10 @@ class CrudService
 		public function index($data = null)
 		{
 			$this->setAction('index');
+			$this->setRedirect(Request::fullUrl());
 			$this->setData(is_object($data)
 				? $data
-				: $this->repo->all($this->meta->pagination));
-			$this->setRedirect(Request::fullUrl());
+				: $this->repo->index($this->meta->pagination, Input::all()));
 			return $this;
 		}
 
