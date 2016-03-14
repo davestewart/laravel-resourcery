@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ViewErrorBag;
+use URL;
 use Validator;
 use Redirect;
 use Request;
@@ -46,7 +47,6 @@ class CrudService
 		 * @var string
 		 */
 		protected $action;
-
 
 		/**
 		 * Any custom view
@@ -116,7 +116,6 @@ class CrudService
 		 * @var bool
 		 */
 		protected $loaded;
-
 
 		/**
 		 * Flag to store whether the data was saved
@@ -199,6 +198,7 @@ class CrudService
 			$this->setData(is_object($data)
 				? $data
 				: $this->repo->all($this->meta->pagination));
+			$this->setRedirect(Request::fullUrl());
 			return $this;
 		}
 
@@ -337,6 +337,16 @@ class CrudService
 		}
 
 		/**
+		 * Store redirect in session
+		 *
+		 * @param   string  $url
+		 */
+		public function setRedirect($url)
+		{
+			Session::set('crud.redirect.' . $this->route, $url);
+		}
+
+		/**
 		 * Validates alternative input and optionally, rules
 		 *
 		 * @param   array           $input
@@ -412,6 +422,7 @@ class CrudService
 			[
 				'route'			=> $this->route,
 				'view'			=> $this->action,
+				'redirect'      => $this->getRedirect(),
 			];
 
 			// text
@@ -476,15 +487,24 @@ class CrudService
 			return $input;
 		}
 
-		public function getErrors()
+		public function getErrors($key = 'default')
 		{
 			/** @var ViewErrorBag $errors */
 			$errors = Session::get('errors');
 			return $errors
-				? $errors->getBag('default')
+				? $errors->getBag($key)
 				: null;
 		}
 
+		public function getRedirect()
+		{
+			$route = Session::get('crud.redirect.' . $this->route);
+			if($route == null)
+			{
+				$route = $this->route;
+			}
+			return $route;
+		}
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// ACCESSORS
@@ -668,7 +688,7 @@ class CrudService
 			// if we have errors, return an error response
 			if($this->errors)
 			{
-				$data =
+						$data =
 				[
 					'message'	=> $this->message,
 					'errors'	=> $this->errors
@@ -703,7 +723,7 @@ class CrudService
 		{
 			if($route == null)
 			{
-				$route = $this->route;
+				$route = $this->getRedirect();
 			}
 			return Redirect::to($route)->with($this->getViewData());
 		}
