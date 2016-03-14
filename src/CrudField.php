@@ -62,7 +62,9 @@ class CrudField
 
 		public function getValue($model)
 		{
-			return $this->getDotProp($model, $this->name);
+			return is_callable($this->value)
+				? call_user_func($this->value, $model)
+				: $this->getDotProp($model, $this->name);
 		}
 
 		public function getDotProp($obj, $names)

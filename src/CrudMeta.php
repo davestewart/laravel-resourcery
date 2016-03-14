@@ -36,19 +36,21 @@ class CrudMeta
 		protected $class        = '\App\Models\Item';
 
 		/**
-		 * Paths to the view files that will render your model's data (defaults to
-		 * the package's catch-all templates)
+		 * Paths to the view files that will render your model's data
+		 *
+		 * Defaults to the package's catch-all templates
 		 *
 		 * @var string[]
 		 */
 		protected $views =
 		[
-			'create'			=> 'vendor.crud.create',
-			'index'				=> 'vendor.crud.index',
-			'show'				=> 'vendor.crud.show',
-			'edit'				=> 'vendor.crud.edit',
-			'form'				=> 'vendor.crud.form',
-			'fields'			=> 'vendor.crud.fields',
+			'create'            => 'vendor.crud.create',
+			'index'             => 'vendor.crud.index',
+			'show'              => 'vendor.crud.show',
+			'edit'              => 'vendor.crud.edit',
+			'form'              => 'vendor.crud.partials.form',
+			'fields'            => 'vendor.crud.partials.fields',
+			'actions'           => 'vendor.crud.partials.actions',
 		];
 
 		/**
@@ -96,6 +98,13 @@ class CrudMeta
 		 *
 		 *  - 'index' => 'username email created_date'
 		 *
+		 * If you want to render any values that require some interim functionality, specify a getter function:
+		 *
+		 * - 'index' => 'posts:getPostCount'
+		 *
+		 * Callbacks should be available as a class method, of the format function($model, $action) and should return
+		 * an associative array of $value => $label pairs. PHP's array_column() provides a neat way to do this!
+		 *
 		 * You may also use the following placeholders to mirror your model's setup:
 		 *
 		 * - :all           All fields
@@ -110,6 +119,7 @@ class CrudMeta
 			'create'		    => ':fillable',
 			'edit'			    => ':fillable',
 			'show'			    => ':visible',
+			'search'			=> ':all',
 		];
 
 		/**
@@ -238,6 +248,8 @@ class CrudMeta
 				}
 			}
 
+			//pr($this->fields);
+
 			// update hidden fields
 			$this->hidden = array_values(array_unique(array_merge($this->hidden, $fields['hidden'])));
 		}
@@ -346,7 +358,7 @@ class CrudMeta
 		}
 
 		/**
-		 * Gets all form fields as an array of CrudField instances
+		 * Gets all form fields for a named view as an array of CrudField instances
 		 *
 		 * @param   string      $action     The resource action
 		 * @param   mixed       $data       The model
@@ -362,7 +374,7 @@ class CrudMeta
 			// grab names
 			if(is_string($names))
 			{
-				preg_match_all('/[\.\w]+/', $names, $matches);
+				preg_match_all('/[:\.\w]+/', $names, $matches);
 				$names = $matches[0];
 			}
 
@@ -391,6 +403,14 @@ class CrudMeta
 			/** @var CrudField */
 			$field                  = \App::make('CrudField');
 
+			// determine callback
+			if(strstr($name, ':') !== false)
+			{
+				$parts      = explode(':', $name);
+				$name       = $parts[0];
+				$callback   = $parts[1];
+			}
+
 			// meta
 			$field->name            = $name;
 			$field->label           = $this->getLabel($name);
@@ -398,9 +418,16 @@ class CrudMeta
 			// value
 			if($action !== 'index')
 			{
-				$field->value       = in_array($name, $this->hidden)
-										? ''
-										: $this->getProperty($data, $name);
+				$field->value   = ! in_array($name, $this->hidden)
+									? $this->getProperty($data, $name)
+									: '';
+			}
+			else
+			{
+				if(isset($callback) && method_exists($this, $callback))
+				{
+					$field->value   = function($model) use ($callback) { return $this->$callback($model); };
+				}
 			}
 
 			// control

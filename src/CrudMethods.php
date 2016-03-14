@@ -19,7 +19,7 @@ trait CrudMethods
 
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// PUBLIC PROPERTIES
+	// PROTECTED METHODS
 
 		/**
 		 * Setup function
@@ -44,6 +44,10 @@ trait CrudMethods
 				$this->crud->debug();
 			}
 		}
+
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// PUBLIC METHODS
 
 		/**
 		 * Display a listing of the resource.
