@@ -1,9 +1,6 @@
 <?php namespace davestewart\laravel\crud\repos;
 
-use davestewart\laravel\crud\CrudMeta;
-use davestewart\laravel\crud\repos\CrudRepo;
 use Eloquent;
-use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 
 /**
@@ -19,6 +16,9 @@ class EloquentRepo implements CrudRepo
 		/** @var string */
 		protected $class;
 
+		/** @var Eloquent */
+		protected $builder;
+
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// INSTANTIATION
@@ -32,7 +32,8 @@ class EloquentRepo implements CrudRepo
 		 */
 		public function initialize($class)
 		{
-			$this->class = $class;
+			$this->class    = $class;
+			$this->builder  = $this->call('query');
 			return $this;
 		}
 
@@ -42,16 +43,20 @@ class EloquentRepo implements CrudRepo
 
 		/**
 		 * Get all items
-		 * 
-		 * @param int               $limit
 		 *
-		 * @return Collection
+		 * @param   int               $limit
+		 * @param   array|null        $filter
+		 * @return  Collection
 		 */
-		public function all($limit = null)
+		public function index($limit = null, array $filter = null)
 		{
+			if($filter)
+			{
+				$this->filter($filter);
+			}
 			return $limit == null
-				? $this->query('all')
-				: $this->query('paginate', $limit);
+				? $this->builder->get()
+				: $this->builder->paginate($limit);
 		}
 
 		/**
@@ -62,7 +67,7 @@ class EloquentRepo implements CrudRepo
 		 */
 		public function find($id)
 		{
-			return $this->query('findOrFail', $id);
+			return $this->builder->find($id);
 		}
 
 		/**
@@ -81,7 +86,7 @@ class EloquentRepo implements CrudRepo
 		 */
 		public function store($data)
 		{
-			return $this->query('create', $data);
+			return $this->call('create', $data);
 		}
 
 		/**
@@ -95,27 +100,102 @@ class EloquentRepo implements CrudRepo
 
 
 	// -----------------------------------------------------------------------------------------------------------------
+	// DATA ACCESS
+
+		public function filter(array $params)
+		{
+			// exit early if no params
+			if(count($params) == 0)
+			{
+				return $this;
+			}
+
+			// filter
+			$fillable   = $this->getFields('all');
+			$fields     = array_combine($fillable, $fillable);
+			$where      = array_intersect_key($params, $fields);
+
+			// query
+			$this->builder->where($where);
+
+			// return
+			return $this;
+		}
+
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// MAGIC
+
+		/**
+		 * Forward all method calls to builder
+		 *
+		 * @param $name
+		 * @param $values
+		 * @return mixed
+		 */
+		public function __call($name, $values)
+		{
+			return call_user_func_array([$this, 'query'], array_merge([$name], $values));
+		}
+
+		/**
+		 * Return existing properties
+		 *
+		 * @param $name
+		 * @return mixed
+		 */
+		public function __get($name)
+		{
+			if(property_exists($this, $name))
+			{
+				return $this->$name;
+			}
+		}
+
+
+	// -----------------------------------------------------------------------------------------------------------------
 	// UTILITIES
 
 		/**
 		 * Get the fields for an Eloquent model (used mainly by the CrudMeta constructor)
 		 *
-		 * @return  string[]                An array of field names for different types of view
+		 * @param null $name
+		 * @return \string[] An array of field names for different types of view
 		 */
-		public function getFields()
+		public function getFields($name = null)
 		{
-			/** @var Eloquent $model */
-			$model          = \App::make($this->class);
-			$data           =
-			[
-				'all'		=> $model->getConnection()->getSchemaBuilder()->getColumnListing($model->getTable()),
-				'visible'	=> $model->getVisible(),
-				'fillable'	=> $model->getFillable(),
-				'hidden'    => $model->getHidden(),
-			];
+			// param
+			$types  = $name == null ? ['all', 'visible', 'fillable', 'hidden'] : [$name];
+
+			// variables
+			$model  = \App::make($this->class);
+			$data   = [];
+
+			// get types
+			foreach($types as $type)
+			{
+				switch($type)
+				{
+					case 'all':
+						$data[$type] = $model->getConnection()->getSchemaBuilder()->getColumnListing($model->getTable());
+						break;
+
+					case 'visible':
+						$data[$type] = $model->getVisible();
+						break;
+
+					case 'fillable':
+						$data[$type] = $model->getFillable();
+						break;
+
+					case 'hidden':
+						$data[$type] = $model->getHidden();
+						break;
+				}
+			}
 
 			// return
-			return $data;
+			return $name == null ? $data : $data[$name];
 		}
 
 
@@ -123,20 +203,27 @@ class EloquentRepo implements CrudRepo
 	// PROTECTED METHODS
 
 		/**
-		 * Query calls on arbitrary models
+		 * Statically calls the model class
 		 *
 		 * @param   $method         string  The method to call
-		 * @param   $parameters,... mixed   unlimited OPTIONAL number of additional variables to display
+		 * @param   $rest,...       mixed   unlimited OPTIONAL number of additional variables to display
 		 * @return  Collection|Eloquent
 		 */
-		protected function query($method, $parameters = null)
+		protected function call($method, $rest = null)
 		{
-			$callable = $this->class . '::' . $method;
-			if(func_num_args() > 1)
-			{
-				return call_user_func_array($callable, array_slice(func_get_args(), 1));
-			}
-			return call_user_func($callable);
+			return call_user_func_array($this->class . '::' . $method, array_slice(func_get_args(), 1));
+		}
+
+		/**
+		 * Builds the query on the builder instance
+		 *
+		 * @param   $method         string  The method to call
+		 * @param   $rest,...       mixed   unlimited OPTIONAL number of additional variables to display
+		 * @return  Collection|Eloquent
+		 */
+		protected function query($method, $rest = null)
+		{
+			return call_user_func_array([$this->builder, $method], array_slice(func_get_args(), 1));
 		}
 
 }
