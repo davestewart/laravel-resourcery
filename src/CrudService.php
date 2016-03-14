@@ -195,9 +195,12 @@ class CrudService
 		{
 			$this->setAction('index');
 			$this->setRedirect(Request::fullUrl());
-			$this->setData(is_object($data)
-				? $data
-				: $this->repo->index($this->meta->pagination, Input::all()));
+			if( ! is_object($data) )
+			{
+				$index  = $this->meta->index;
+				$data   = $this->repo->index($index['orderBy'], $index['orderDir'], $index['perPage'], Input::all());
+			}
+			$this->setData($data);
 			return $this;
 		}
 

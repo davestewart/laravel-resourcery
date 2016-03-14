@@ -10,7 +10,7 @@ use Validator;
  *
  * @property string 	$class		    The namespaced class of the Model
  * @property string[] 	$views		    Property
- * @property int    	$pagination		Property
+ * @property mixed[]   	index	    	Property
  * @property string   	$singular		Property
  * @property string 	$plural		    Property
  * @property string 	$titleAttr		Property
@@ -54,11 +54,16 @@ class CrudMeta
 		];
 
 		/**
-		 * The pagination limit for index pages
+		 * Behaviour for index pages
 		 *
 		 * @var int
 		 */
-		protected $pagination   = 50;
+		protected $index =
+		[
+			'orderBy'           => 'id',
+			'orderDir'          => 'desc',
+			'perPage'           => 50,
+		];
 
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -119,7 +124,6 @@ class CrudMeta
 			'create'		    => ':fillable',
 			'edit'			    => ':fillable',
 			'show'			    => ':visible',
-			'search'			=> ':all',
 		];
 
 		/**

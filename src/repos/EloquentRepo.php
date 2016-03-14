@@ -2,6 +2,7 @@
 
 use Eloquent;
 use Illuminate\Support\Collection;
+use Request;
 
 /**
  * Class CrudModel
@@ -44,19 +45,22 @@ class EloquentRepo implements CrudRepo
 		/**
 		 * Get all items
 		 *
-		 * @param   int               $limit
-		 * @param   array|null        $filter
+		 * @param   string      $orderBy
+		 * @param   string      $orderDir
+		 * @param   int         $limit
+		 * @param   array|null  $filter
 		 * @return  Collection
 		 */
-		public function index($limit = null, array $filter = null)
+		public function index($orderBy = 'id', $orderDir = 'asc', $limit = null, array $filter = null)
 		{
+			$this->builder->orderBy($orderBy, $orderDir);
 			if($filter)
 			{
 				$this->filter($filter);
 			}
 			return $limit == null
 				? $this->builder->get()
-				: $this->builder->paginate($limit);
+				: $this->paginate($limit);
 		}
 
 		/**
@@ -120,6 +124,13 @@ class EloquentRepo implements CrudRepo
 
 			// return
 			return $this;
+		}
+
+		public function paginate($limit)
+		{
+			return $this->builder
+				->paginate($limit)
+				->appends(Request::except('page'));
 		}
 
 

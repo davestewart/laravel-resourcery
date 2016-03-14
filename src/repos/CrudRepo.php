@@ -6,7 +6,7 @@ interface CrudRepo
 {
 	public function initialize($class);
 
-	public function index($limit = null, array $filter = null);
+	public function index($orderBy = 'id', $orderDir = 'asc', $limit = null, array $filter = null);
 
 	public function find($id);
 
