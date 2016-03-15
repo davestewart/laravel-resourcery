@@ -43,21 +43,13 @@ class EloquentRepo implements CrudRepo
 	// DATA ACCESS
 
 		/**
-		 * Get all items
+		 * Returns all items
 		 *
-		 * @param   string      $orderBy
-		 * @param   string      $orderDir
 		 * @param   int         $limit
-		 * @param   array|null  $filter
 		 * @return  Collection
 		 */
-		public function index($orderBy = 'id', $orderDir = 'asc', $limit = null, array $filter = null)
+		public function index($limit = null)
 		{
-			$this->builder->orderBy($orderBy, $orderDir);
-			if($filter)
-			{
-				$this->filter($filter);
-			}
 			return $limit == null
 				? $this->builder->get()
 				: $this->paginate($limit);
@@ -75,6 +67,8 @@ class EloquentRepo implements CrudRepo
 		}
 
 		/**
+		 * Updates a database row
+		 *
 		 * @param   int             $id
 		 * @param   array           $data
 		 * @return  Eloquent
@@ -85,6 +79,8 @@ class EloquentRepo implements CrudRepo
 		}
 
 		/**
+		 * Inserts a new row
+		 *
 		 * @param   array           $data
 		 * @return  mixed
 		 */
@@ -94,6 +90,8 @@ class EloquentRepo implements CrudRepo
 		}
 
 		/**
+		 * Deletes a row
+		 *
 		 * @param   int             $id
 		 * @return  Eloquent
 		 */
@@ -104,8 +102,27 @@ class EloquentRepo implements CrudRepo
 
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// DATA ACCESS
+	// MODIFIERS
 
+		/**
+		 * Orders the query results
+		 *
+		 * @param   string      $column
+		 * @param   string      $direction
+		 * @return  $this
+		 */
+		public function orderBy($column, $direction = 'asc')
+		{
+			$this->builder->orderBy($column, $direction);
+			return $this;
+		}
+
+		/**
+		 * Filters the query results
+		 *
+		 * @param array $params
+		 * @return $this
+		 */
 		public function filter(array $params)
 		{
 			// exit early if no params
@@ -126,6 +143,12 @@ class EloquentRepo implements CrudRepo
 			return $this;
 		}
 
+		/**
+		 * Gets and paginates results
+		 *
+		 * @param $limit
+		 * @return $this
+		 */
 		public function paginate($limit)
 		{
 			return $this->builder
@@ -138,7 +161,7 @@ class EloquentRepo implements CrudRepo
 	// MAGIC
 
 		/**
-		 * Forward all method calls to builder
+		 * Forwards all method calls to query builder instance
 		 *
 		 * @param $name
 		 * @param $values
@@ -150,7 +173,7 @@ class EloquentRepo implements CrudRepo
 		}
 
 		/**
-		 * Return existing properties
+		 * Returns any existing properties
 		 *
 		 * @param $name
 		 * @return mixed
@@ -161,6 +184,7 @@ class EloquentRepo implements CrudRepo
 			{
 				return $this->$name;
 			}
+			return null;
 		}
 
 
@@ -168,7 +192,7 @@ class EloquentRepo implements CrudRepo
 	// UTILITIES
 
 		/**
-		 * Get the fields for an Eloquent model (used mainly by the CrudMeta constructor)
+		 * Returns the fields for an Eloquent model (used mainly by the CrudMeta constructor)
 		 *
 		 * @param null $name
 		 * @return \string[] An array of field names for different types of view

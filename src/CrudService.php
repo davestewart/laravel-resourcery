@@ -198,7 +198,10 @@ class CrudService
 			if( ! is_object($data) )
 			{
 				$index  = $this->meta->index;
-				$data   = $this->repo->index($index['orderBy'], $index['orderDir'], $index['perPage'], Input::all());
+				$data   = $this->repo
+							->filter(Input::all())
+							->orderBy($index['orderBy'], $index['orderDir'])
+							->index($index['perPage']);
 			}
 			$this->setData($data);
 			return $this;
@@ -213,7 +216,7 @@ class CrudService
 		public function show($id)
 		{
 			$this->setAction('show');
-			$this->setData($this->resolveId($id));
+			$this->setData($this->loadModel($id));
 			return $this;
 		}
 
@@ -226,7 +229,7 @@ class CrudService
 		public function edit($id)
 		{
 			$this->setAction('edit');
-			$this->setData($this->resolveId($id));
+			$this->setData($this->loadModel($id));
 			return $this;
 		}
 
@@ -291,7 +294,7 @@ class CrudService
 	// OVERRIDES
 
 		/**
-		 * Explicitly set the action
+		 * Explicitly sets the action
 		 *
 		 * @param   $action
 		 * @return  self
@@ -303,7 +306,7 @@ class CrudService
 		}
 
 		/**
-		 * Explicitly sets the view
+		 * Explicitly sets the view path
 		 *
 		 * @param   string  $path
 		 * @return  self;
@@ -315,7 +318,7 @@ class CrudService
 		}
 
 		/**
-		 * Explicitly sets the data
+		 * Explicitly sets the resource data
 		 *
 		 * @param   mixed   $data
 		 * @return  self;
@@ -339,7 +342,7 @@ class CrudService
 		}
 
 		/**
-		 * Store redirect in session
+		 * Store the index redirect URL in session
 		 *
 		 * @param   string  $url
 		 */
@@ -349,7 +352,7 @@ class CrudService
 		}
 
 		/**
-		 * Validates alternative input and optionally, rules
+		 * Validates input, optionally with alternate rules
 		 *
 		 * @param   array           $input
 		 * @param   array|null      $rules
@@ -385,7 +388,7 @@ class CrudService
 	// VIEW DATA
 
 		/**
-		 * Get the loaded data
+		 * Loads and returns all data for the resource
 		 *
 		 * @return \Illuminate\Contracts\Support\Arrayable
 		 */
@@ -399,7 +402,7 @@ class CrudService
 		}
 
 		/**
-		 * Get the data as fields
+		 * Collates the view data as an array of field instances
 		 *
 		 * @return array
 		 */
@@ -409,7 +412,7 @@ class CrudService
 		}
 
 		/**
-		 * Get all values, labels, text etc that pertains to this route
+		 * Collates all view values, labels, text etc that pertains to this route
 		 *
 		 * @return array
 		 */
@@ -455,7 +458,7 @@ class CrudService
 		}
 
 		/**
-		 * Get vlues,
+		 * Collates all view data (values, fields, data)
 		 *
 		 * @return array
 		 */
@@ -489,6 +492,12 @@ class CrudService
 			return $input;
 		}
 
+		/**
+		 * Gets errors from the session
+		 *
+		 * @param string $key
+		 * @return \Illuminate\Contracts\Support\MessageBag|null
+		 */
 		public function getErrors($key = 'default')
 		{
 			/** @var ViewErrorBag $errors */
@@ -498,6 +507,11 @@ class CrudService
 				: null;
 		}
 
+		/**
+		 * Gets the index redirect for this resource from the session
+		 *
+		 * @return mixed|string
+		 */
 		public function getRedirect()
 		{
 			$route = Session::get('crud.redirect.' . $this->route);
@@ -593,6 +607,19 @@ class CrudService
 		}
 
 		/**
+		 * Resolves a model from an input
+		 *
+		 * @param   object|int  $input
+		 * @return  mixed
+		 */
+		protected function loadModel($input)
+		{
+			return is_object($input)
+				? $input
+				: $this->repo->find($input);
+		}
+
+		/**
 		 * Checks that all related models have been loaded
 		 */
 		protected function loadRelated()
@@ -618,13 +645,6 @@ class CrudService
 
 			// flag loaded
 			$this->loaded = true;
-		}
-
-		protected function resolveId($id)
-		{
-			return is_object($id)
-				? $id
-				: $this->repo->find($id);
 		}
 
 
