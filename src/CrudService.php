@@ -197,11 +197,14 @@ class CrudService
 			$this->setRedirect(Request::fullUrl());
 			if( ! is_object($data) )
 			{
-				$index  = $this->meta->index;
+				/** @var string $orderBy */
+				/** @var string $orderDir */
+				/** @var int $perPage */
+				extract($this->meta->index);
 				$data   = $this->repo
 							->filter(Input::all())
-							->orderBy($index['orderBy'], $index['orderDir'])
-							->index($index['perPage']);
+							->orderBy($orderBy, $orderDir)
+							->index($perPage);
 			}
 			$this->setData($data);
 			return $this;
