@@ -262,22 +262,82 @@ class CrudMeta
 	// -----------------------------------------------------------------------------------------------------------------
 	// ACCESSORS
 
-		public function __get($name)
+		/**
+		 * Gets a prpoerty on the CrudMeta instance
+		 *
+		 * @param $name
+		 * @return mixed|null
+		 * @throws InvalidPropertyError
+		 */
+		public function get($name)
 		{
-			if(property_exists($this, $name))
+			if(strstr($name, '.') !== false)
+			{
+				$parts  = explode('.', $name);
+				$prop   = array_shift($parts);
+				$path   = implode('.', $parts);
+				if(array_has($this->$prop, $path))
+				{
+					return array_get($this->$prop, $path);
+				}
+			}
+			else if(property_exists($this, $name))
 			{
 				return $this->$name;
 			}
-			throw new InvalidParameterException("Property $name does not exist");
+			throw new InvalidPropertyError($name);
+		}
+
+		/**
+		 * Sets or merges values into an array property on the CrudMeta instance
+		 *
+		 * @param $name
+		 * @param $value
+		 * @return $this
+		 * @throws InvalidPropertyError
+		 */
+		public function set($name, $value)
+		{
+			if(strstr($name, '.') !== false)
+			{
+				$parts  = explode('.', $name);
+				$prop   = array_shift($parts);
+				$path   = implode('.', $parts);
+				if(property_exists($this, $prop))
+				{
+					array_set($this->$prop, $path, $value);
+				}
+				else
+				{
+					throw new InvalidPropertyError($name);
+				}
+			}
+			else if(property_exists($this, $name))
+			{
+				if(is_array($this->$name))
+				{
+					$this->$name = array_merge($this->$name, $value);
+				}
+				else
+				{
+					$this->$name = $value;
+				}
+			}
+			else
+			{
+				throw new InvalidPropertyError($name);
+			}
+			return $this;
+		}
+
+		public function __get($name)
+		{
+			return $this->get($name);
 		}
 
 		public function __set($name, $value)
 		{
-			if( ! property_exists($this, $name) )
-			{
-				throw new InvalidParameterException("Property $name does not exist");
-			}
-			$this->$name = $value;
+			$this->set($name, $value);
 		}
 
 
@@ -540,4 +600,12 @@ class CrudMeta
 		}
 
 
+}
+
+class InvalidPropertyError extends \Exception
+{
+	public function __construct($name)
+	{
+		$this->message = "Property $name does not exist";
+	}
 }
