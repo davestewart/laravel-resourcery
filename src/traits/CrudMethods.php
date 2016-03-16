@@ -1,5 +1,7 @@
-<?php namespace davestewart\laravel\crud;
+<?php namespace davestewart\laravel\crud\traits;
 
+use davestewart\laravel\crud\CrudMeta;
+use davestewart\laravel\crud\CrudService;
 use Eloquent;
 use Illuminate\Http\Response;
 
