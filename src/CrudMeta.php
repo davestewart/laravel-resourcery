@@ -1,8 +1,9 @@
 <?php namespace davestewart\laravel\crud;
 
+use ArrayObject;
+use davestewart\laravel\crud\errors\InvalidPropertyException;
 use Illuminate\Support\MessageBag;
 use Input;
-use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Validator;
 
 /**
@@ -50,7 +51,9 @@ class CrudMeta
 			'edit'              => 'vendor.crud.edit',
 			'form'              => 'vendor.crud.partials.form',
 			'fields'            => 'vendor.crud.partials.fields',
+			'field'             => 'vendor.crud.partials.field',
 			'actions'           => 'vendor.crud.partials.actions',
+			'related'           => 'vendor.crud.partials.related',
 		];
 
 		/**
@@ -64,6 +67,15 @@ class CrudMeta
 			'orderDir'          => 'desc',
 			'perPage'           => 50,
 		];
+
+		/**
+		 * The attribute to use to determine the title of the model
+		 *
+		 * For example, a User model may want to use the name attribute, but a
+		 *
+		 * @var string
+		 */
+		protected $titleAttr    = 'name';
 
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -84,13 +96,19 @@ class CrudMeta
 		protected $plural       = 'items';
 
 		/**
-		 * The attribute to use to determine the title of the model
+		 * Confirmation messages for actions
 		 *
-		 * For example, a User model may want to use the name attribute, but a
+		 * Use the placeholder :item to include the item's $singular property
 		 *
-		 * @var string
+		 * @var string[]
 		 */
-		protected $titleAttr    = 'name';
+		protected $messages =
+		[
+			'created'           => 'Successfully created :item',
+			'updated'           => 'Successfully updated :item',
+			'deleted'           => 'Successfully deleted :item',
+			'invalid'           => 'The form has errors',
+		];
 
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -127,6 +145,20 @@ class CrudMeta
 		];
 
 		/**
+		 * Optional array of labels for fields
+		 *
+		 * Should be an array of the form $field => $name:
+		 *
+		 *  - 'name'        => 'User Name'
+		 *  - 'clientId'    => 'Client'
+		 *
+		 * If not supplied, labels default to the $field name
+		 *
+		 * @var string[]
+		 */
+		protected $labels = [ ];
+
+		/**
 		 * Preferred controls for fields
 		 *
 		 * Should be an array of the form $field => $type:
@@ -157,46 +189,29 @@ class CrudMeta
 		 *
 		 * @var string[]
 		 */
-		protected $controls =
-		[
-
-		];
+		protected $controls = [ ];
 
 		/**
-		 * Optional array of labels for fields
+		 * Controls for create action only
 		 *
-		 * Should be an array of the form $field => $name:
+		 * Values will be merged with the original controls array
 		 *
-		 *  - 'name'        => 'User Name'
-		 *  - 'clientId'    => 'Client'
-		 *
-		 * If not supplied, labels default to the $field name
-		 *
-		 * @var string[]
+		 * @var null|array
 		 */
-		protected $labels =
-		[
+		protected $controls_create = null;
 
-		];
+		/**
+		 * Controls for edit action only
+		 *
+		 * Values will be merged with the original controls array
+		 *
+		 * @var null|array
+		 */
+		protected $controls_edit = null;
 
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// VALIDATION
-
-		/**
-		 * Confirmation messages for actions
-		 *
-		 * Use the placeholder :item to include the item's $singular property
-		 *
-		 * @var string[]
-		 */
-		protected $messages =
-		[
-			'created'           => 'Successfully created :item',
-			'updated'           => 'Successfully updated :item',
-			'deleted'           => 'Successfully deleted :item',
-			'invalid'           => 'Validation failed',
-		];
 
 		/**
 		 * Validation rules
@@ -207,10 +222,11 @@ class CrudMeta
 		 *
 		 * @var string[]
 		 */
-		protected $rules =
-		[
+		protected $rules = [ ];
 
-		];
+		protected $rules_store = null;
+
+		protected $rules_update = null;
 
 		/**
 		 * Fields to keep secret when repopulating the form
@@ -222,6 +238,25 @@ class CrudMeta
 			'password',
 			'password_confirm'
 		];
+
+
+	// ------------------------------------------------------------------------------------------------
+	// CACHED
+
+		/**
+		 * A cached version of all merged / combined controls arrays
+		 *
+		 * @var array
+		 */
+		protected $_controls    = null;
+
+		/**
+		 * A cached version of all merged / combined rules arrays
+		 *
+		 * @var array
+		 */
+		protected $_rules       = null;
+
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// INSTANTIATION
@@ -239,10 +274,10 @@ class CrudMeta
 			// variables
 			$types = array_keys($fields);
 
-			// expand fields with :placeholders
+			// expand fields with :placeholders for :all, :fillable, :hidden, etc
 			foreach($this->fields as $key => $value)
 			{
-				$type = substr($value, 1);
+				$type = str_replace(':', '', $value);
 				if(in_array($type, $types))
 				{
 					$values = count($fields[$type])
@@ -255,7 +290,10 @@ class CrudMeta
 			//pr($this->fields);
 
 			// update hidden fields
-			$this->hidden = array_values(array_unique(array_merge($this->hidden, $fields['hidden'])));
+			if(is_array($fields['hidden']))
+			{
+				$this->hidden = array_values(array_unique(array_merge($this->hidden, $fields['hidden'])));
+			}
 		}
 
 
@@ -263,11 +301,11 @@ class CrudMeta
 	// ACCESSORS
 
 		/**
-		 * Gets a prpoerty on the CrudMeta instance
+		 * Gets a property on the CrudMeta instance
 		 *
 		 * @param $name
 		 * @return mixed|null
-		 * @throws InvalidPropertyError
+		 * @throws InvalidPropertyException
 		 */
 		public function get($name)
 		{
@@ -285,7 +323,7 @@ class CrudMeta
 			{
 				return $this->$name;
 			}
-			throw new InvalidPropertyError($name);
+			throw new InvalidPropertyException($name, get_called_class());
 		}
 
 		/**
@@ -294,7 +332,7 @@ class CrudMeta
 		 * @param $name
 		 * @param $value
 		 * @return $this
-		 * @throws InvalidPropertyError
+		 * @throws InvalidPropertyException
 		 */
 		public function set($name, $value)
 		{
@@ -309,7 +347,7 @@ class CrudMeta
 				}
 				else
 				{
-					throw new InvalidPropertyError($name);
+					throw new InvalidPropertyException($name, get_called_class());
 				}
 			}
 			else if(property_exists($this, $name))
@@ -325,7 +363,7 @@ class CrudMeta
 			}
 			else
 			{
-				throw new InvalidPropertyError($name);
+				throw new InvalidPropertyException($name, get_called_class());
 			}
 			return $this;
 		}
@@ -344,9 +382,9 @@ class CrudMeta
 	// -----------------------------------------------------------------------------------------------------------------
 	// METHODS
 
-		public function validate($input)
+		public function validate($input, $action = null)
 		{
-			return Validator::make($input, $this->rules);
+			return Validator::make($input, $this->getRules($action));
 		}
 
 
@@ -386,7 +424,6 @@ class CrudMeta
 		{
 			return $this->views[$action];
 		}
-
 
 		/**
 		 * Returns the title for the entity
@@ -433,7 +470,7 @@ class CrudMeta
 		{
 			// get fields
 			$names      = $this->fields[$action];
-			$fields     = [];
+			$fields     = new FieldList();
 
 			// grab names
 			if(is_string($names))
@@ -457,7 +494,7 @@ class CrudMeta
 		 *
 		 * @param   string      $action     The resource action
 		 * @param   string      $name       The name of the field to build
-		 * @param   mixed       $data       The model
+		 * @param   mixed       $data       The source data, such as a model
 		 * @param   MessageBag  $errors     Any validation errors
 		 * @return  CrudField
 		 * @throws  \Exception
@@ -467,64 +504,126 @@ class CrudMeta
 			/** @var CrudField */
 			$field                  = \App::make('CrudField');
 
-			// determine callback
-			if(strstr($name, ':') !== false)
-			{
-				$parts      = explode(':', $name);
-				$name       = $parts[0];
-				$callback   = $parts[1];
-			}
 
-			// meta
-			$field->name            = $name;
-			$field->label           = $this->getLabel($name);
+			// ------------------------------------------------------------------------------------------------
+			// basic information
 
-			// value
-			if($action !== 'index')
-			{
-				$field->value   = ! in_array($name, $this->hidden)
-									? $this->getProperty($data, $name)
-									: '';
-			}
-			else
-			{
+				// initial check to see if the field has a callback, i.e. "posts:getPostCount"
+				if(strstr($name, ':') !== false)
+				{
+					$parts      = explode(':', $name);
+					$name       = $parts[0];
+					$callback   = $parts[1];
+				}
+
+				// field name & label
+				$field->name            = $name;
+				$field->label           = $this->getLabel($name);
+
+				// if we have a callback, call it
 				if(isset($callback) && method_exists($this, $callback))
 				{
 					$field->value   = function($model) use ($callback) { return $this->$callback($model); };
 				}
-			}
 
-			// control
-			if($action === 'create' || $action === 'edit')
-			{
-				// control
-				$control                = $this->getControl($action, $name);
-				$field->type            = $control->type;
-				if($control->callback)
+				// if we're on the index route, there's no point assigning values as they will be resolved per-model in the for loop
+				else if($action == 'index')
 				{
-					if( ! method_exists($this, $control->callback) )
+					// do nothing
+				}
+
+				// otherwise, attempt to resolve a value, unless hidden
+				else
+				{
+					$field->value   = ! in_array($name, $this->hidden)
+										? $this->getProperty($data, $name)
+										: null;
+				}
+
+
+			// ------------------------------------------------------------------------------------------------
+			// controls, for create or edit routes only
+
+				if($action === 'create' || $action === 'edit')
+				{
+					// control
+					$control                = $this->getControlProps($name, $action);
+					$field->type            = $control->type;
+					if($control->callback)
 					{
-						throw new \Exception("Callback '{$control->callback}' does not exist on " . __CLASS__);
+						if( ! method_exists($this, $control->callback) )
+						{
+							throw new \Exception("Callback '{$control->callback}' does not exist on " . __CLASS__);
+						}
+						$field->options     = $this->{$control->callback}($data);
 					}
-					$field->options     = $this->{$control->callback}($data);
+
+					// errors
+					if($errors && $errors->has($name))
+					{
+						$field->error       = $errors->first($name);
+					}
+
+					// old values
+					$old                    = Input::old($name);
+					$field->old             = $old ? $old : $field->value;
+
+					// attributes
+					//$field->rules           = $this->getRule($name, $action);
+					$field->view            = $this->views['field'];
 				}
-
-				// errors
-				if($errors && $errors->has($name))
-				{
-					$field->error       = $errors->first($name);
-				}
-
-				// old values
-				$old                    = Input::old($name);
-				$field->old             = $old ? $old : $field->value;
-
-				// attributes
-				$field->rules           = $this->rules[$name];
-			}
 
 			// return
 			return $field;
+		}
+
+		/**
+		 * Gets the list of fields for a certain action
+		 *
+		 * Combines or returns rules from $rules_store and $rules_update
+		 *
+		 * @param null $action
+		 * @return mixed|null|\string[]
+		 */
+		public function getRules($action = null)
+		{
+			// variables
+			$method = 'rules_' . $action;
+			$rules  = $this->rules;
+			$extra  = property_exists($this, $method) ? $this->$method : null;
+
+			// debug
+			//pr($method, $rules, $extra);
+
+			// merge
+			if(is_array($extra))
+			{
+				if(count($rules))
+				{
+					$validator = Validator::make([], $rules);
+					foreach($extra as $key => $value)
+					{
+						$validator->mergeRules($key, $value);
+					}
+					return $validator->getRules();
+				}
+				return $extra;
+			}
+
+			// return base
+			return $rules;
+		}
+
+		/**
+		 * Gets the
+		 *
+		 * @param      $name
+		 * @param null $action
+		 * @return string
+		 */
+		public function getRule($name, $action = null)
+		{
+			return $this->getRules($action)[$name];
 		}
 
 
@@ -532,51 +631,76 @@ class CrudMeta
 	// UTILITIES
 
 		/**
+		 * Gets the list of controls for a certain action
+		 *
+		 * @param null $action
+		 * @return mixed|null|\string[]
+		 */
+		protected function getControls($action = null)
+		{
+			// return cached controls if they exist
+			$controls = array_get($this->_controls, $action);
+			if($controls)
+			{
+				return $controls;
+			}
+
+			// variables
+			$method     = 'controls_' . $action;
+			$controls   = $this->controls;
+			$extra      = property_exists($this, $method) ? $this->$method : null;
+
+			// merge or replace additional controls
+			if(is_array($extra))
+			{
+				$controls = count($controls)
+					? array_merge($controls, $extra)
+					: $extra;
+			}
+
+			// cache results
+			array_set($this->_controls, $action, $controls);
+
+			// return results
+			return $controls;
+		}
+
+		/**
 		 * Gets control properties for an action/field
 		 *
-		 * @param   string    $action   The current action
-		 * @param   string    $name     The name of the control to find
-		 *
+		 * @param   string  $name   The name of the control to find
+		 * @param   string  $action The current action
 		 * @return  object
 		 */
-		protected function getControl($action, $name)
+		protected function getControlProps($name, $action)
 		{
 			// variables
-			$control    = (object) [];
-			$input      = $this->controls[$name];
+			$controls   = $this->getControls($action);
+			$data       = $controls[$name];
 
 			// single control type
-			if(strstr($input, ':') === FALSE)
+			if(strstr($data, ':') === FALSE)
 			{
-				$control->type = $input;
+				return new ControlProps($data);
 			}
 
 			// compound control type
 			else
 			{
 				// grab controls
-				preg_match_all('/(\w+):(\w+)/', $input, $matches);
-				$controls       = array_combine($matches[1], $matches[2]);
+				preg_match_all('/(\w+):(\w+)/', $data, $matches);
+				$controls = array_combine($matches[1], $matches[2]);
 
 				// single entry
 				if(count($controls) === 1)
 				{
-					$type       = $matches[1][0];
-					$callback   = $matches[2][0];
+					return new ControlProps($matches[1][0], $matches[2][0]);
 				}
 				else
 				{
-					$type       = $controls[$action];
-					$callback   = $controls['options'];
+					return new ControlProps($controls[$action], $controls['options']);
 				}
-
-				// assign
-				$control->type    = $type;
-				$control->callback= $callback;
 			}
-
-			// return
-			return $control;
 		}
 
 		/**
@@ -602,10 +726,26 @@ class CrudMeta
 
 }
 
-class InvalidPropertyError extends \Exception
+class FieldList extends ArrayObject
 {
-	public function __construct($name)
+	public function __get($name)
 	{
-		$this->message = "Property $name does not exist";
+		if(array_key_exists($name, $this))
+		{
+			return $this[$name];
+		}
+		throw new InvalidPropertyException($name, get_called_class());
+	}
+}
+
+class ControlProps
+{
+	public $type;
+	public $callback;
+
+	public function __construct($type = null, $callback = null)
+	{
+		$this->type     = $type;
+		$this->callback = $callback;
 	}
 }

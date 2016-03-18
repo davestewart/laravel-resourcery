@@ -1,14 +1,21 @@
 <?php namespace davestewart\laravel\crud;
 
+use davestewart\laravel\crud\controls\CrudControl;
+
 /**
  * Class FieldMeta
  *
- * @property    string      $value
- * @property    string      $old
- * @property    string      $type
- * @property    string[]    $options
- * @property    string      $error
- * @property    object      $model
+ * @property    string          $name
+ * @property    string          $label
+ * @property    string          $value
+ * @property    string          $old
+ * @property    string          $type
+ * @property    string[]        $options
+ * @property    string[]        $rules
+ * @property    string          $error
+ * @property    string          $view
+ * @property    object          $model
+ * @property    CrudControl     $control
  */
 class CrudField
 {
@@ -40,6 +47,9 @@ class CrudField
 		/** @var string */
 		protected $error;
 
+		/** @var string */
+		protected $view;
+
 
 	// ------------------------------------------------------------------------------------------------
 	// ACCESSORS
@@ -58,9 +68,18 @@ class CrudField
 			{
 				return $this->$name;
 			}
+			else if($name == 'control')
+			{
+				return \App::make('CrudControl', [$this]);
+			}
+			else if($name == 'dump')
+			{
+				return '<pre>' . print_r($this, 1) . '</pre>';
+			}
+
 		}
 
-		public function getValue($model)
+		public function value($model)
 		{
 			return is_callable($this->value)
 				? call_user_func($this->value, $model)
@@ -78,6 +97,15 @@ class CrudField
 				$names = explode('.', $names);
 			}
 			return array_reduce($names, function($obj, $name){ return $obj->$name; }, $obj);
+		}
+
+
+	// ------------------------------------------------------------------------------------------------
+	// UTILITIES
+
+		public function __toString()
+		{
+			return $this->dump;
 		}
 
 }

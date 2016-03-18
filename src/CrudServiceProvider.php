@@ -31,8 +31,9 @@ namespace davestewart\laravel\crud
 		public function register()
 		{
 			$this->app->bind('CrudService', 'davestewart\laravel\crud\CrudService');
-			$this->app->bind('CrudRepo',    'davestewart\laravel\crud\repos\EloquentRepo');
+			$this->app->bind('CrudMeta',    'davestewart\laravel\crud\CrudMeta');
 			$this->app->bind('CrudField',   'davestewart\laravel\crud\CrudField');
+			$this->app->bind('CrudRepo',    'davestewart\laravel\crud\repos\EloquentRepo');
 			$this->app->bind('CrudControl', 'davestewart\laravel\crud\controls\FormControl');
 		}
 
