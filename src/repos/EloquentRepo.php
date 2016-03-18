@@ -8,7 +8,7 @@ use Request;
  * Class CrudModel
  * @package davestewart\laravel\crud
  */
-class EloquentRepo implements CrudRepo
+class EloquentRepo extends CrudRepo
 {
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -27,9 +27,8 @@ class EloquentRepo implements CrudRepo
 		/**
 		 * Initialize the repo with a model's class
 		 *
-		 * @param   string      $class      A model class
-		 * @return  array
-		 * @throws  \Exception
+		 * @param   string  $class
+		 * @return  self
 		 */
 		public function initialize($class)
 		{
@@ -48,11 +47,14 @@ class EloquentRepo implements CrudRepo
 		 * @param   int         $limit
 		 * @return  Collection
 		 */
-		public function index($limit = null)
+		public function all($limit = null)
 		{
 			return $limit == null
-				? $this->builder->get()
-				: $this->paginate($limit);
+				? $this->builder
+					->get()
+				: $this->builder
+					->paginate($limit)
+					->appends(Request::except('page'));
 		}
 
 		/**
@@ -63,7 +65,9 @@ class EloquentRepo implements CrudRepo
 		 */
 		public function find($id)
 		{
-			return $this->builder->find($id);
+			return is_object($id)
+				? $id
+				: $this->builder->find($id);
 		}
 
 		/**
@@ -143,25 +147,14 @@ class EloquentRepo implements CrudRepo
 			return $this;
 		}
 
-		/**
-		 * Gets and paginates results
-		 *
-		 * @param $limit
-		 * @return $this
-		 */
-		public function paginate($limit)
-		{
-			return $this->builder
-				->paginate($limit)
-				->appends(Request::except('page'));
-		}
-
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// MAGIC
 
 		/**
 		 * Forwards all method calls to query builder instance
+		 *
+		 * Enables aggregation on the Rep, for example $repo->all()->count()
 		 *
 		 * @param $name
 		 * @param $values

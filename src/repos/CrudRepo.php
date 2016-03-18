@@ -2,57 +2,122 @@
 
 use Illuminate\Database\Eloquent\Collection;
 
-interface CrudRepo
+class CrudRepo
 {
-	public function initialize($class);
 
-	/**
-	 * @param null $limit
-	 * @return array|Collection|mixed
-	 */
-	public function index($limit = null);
+	// ------------------------------------------------------------------------------------------------
+	// INSTANTIATION
 
-	/**
-	 * @param $id
-	 * @return mixed
-	 */
-	public function find($id);
+		/**
+		 * Stub initialize method
+		 *
+		 * @param $options
+		 */
+		public function initialize($options)
+		{
+			// implement in subclass
+			// use func_get_args() to get more than one parameter
+		}
 
-	/**
-	 * @param $id
-	 * @param $data
-	 * @return mixed
-	 */
-	public function update($id, $data);
 
-	/**
-	 * @param $data
-	 * @return mixed
-	 */
-	public function store($data);
+	// ------------------------------------------------------------------------------------------------
+	// DATA ACCESS
 
-	/**
-	 * @param $id
-	 * @return mixed
-	 */
-	public function destroy($id);
+		/**
+		 * Returns multiple items
+		 *
+		 * @param null $limit
+		 * @return array|Collection|mixed
+		 */
+		public function all($limit = null)
+		{
+			return [];
+		}
 
-	/**
-	 * @param        $column
-	 * @param string $direction
-	 * @return CrudRepo
-	 */
-	public function orderBy($column, $direction = 'asc');
+		/**
+		 * Finds a single row in the database
+		 *
+		 * @param $id
+		 * @return mixed
+		 */
+		public function find($id)
+		{
+			return (object) [];
+		}
 
-	/**
-	 * @param array $params
-	 * @return CrudRepo
-	 */
-	public function filter(array $params);
+		/**
+		 * Updates an existing row in the database
+		 *
+		 * @param $id
+		 * @param $data
+		 * @return mixed
+		 */
+		public function update($id, $data)
+		{
+			return true;
+		}
 
-	/**
-	 * @return string[]
-	 */
-	public function getFields();
+		/**
+		 * Adds a new row to the database
+		 *
+		 * @param $data
+		 * @return mixed
+		 */
+		public function store($data)
+		{
+			return true;
+		}
+
+		/**
+		 * Deletes a row from the database
+		 *
+		 * @param $id
+		 * @return mixed
+		 */
+		public function destroy($id)
+		{
+			return true;
+		}
+
+
+	// ------------------------------------------------------------------------------------------------
+	// MODIFIERS
+
+		/**
+		 * Updates the order by clause
+		 *
+		 * @param        $column
+		 * @param string $direction
+		 * @return CrudRepo
+		 */
+		public function orderBy($column, $direction = 'asc')
+		{
+			return $this;
+		}
+
+		/**
+		 * Adds filters to the query
+		 *
+		 * @param array $params
+		 * @return CrudRepo
+		 */
+		public function filter(array $params)
+		{
+			return $this;
+		}
+
+
+	// ------------------------------------------------------------------------------------------------
+	// UTILITIES
+
+		/**
+		 * Gets the fields for different types of input, i.e. hidden ,fillable, etc
+		 *
+		 * @return string[]
+		 */
+		public function getFields()
+		{
+			return [];
+		}
 
 }
