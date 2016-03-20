@@ -95,7 +95,7 @@ class CrudMetaService
 
 		public function validate($input, $action = null)
 		{
-			return Validator::make($input, $this->getRules($action));
+			return $this->meta->validate($input, $this->getRules($action), $action);
 		}
 
 

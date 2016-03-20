@@ -1,9 +1,7 @@
-<?php namespace davestewart\laravel\crud;
+<?php namespace davestewart\laravel\crud\services;
 
-use App\data\entities\User;
+use davestewart\laravel\crud\CrudMeta;
 use davestewart\laravel\crud\repos\CrudRepo;
-
-use davestewart\laravel\crud\services\CrudMetaService;
 use Flash;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Pagination\AbstractPaginator;
