@@ -3,6 +3,7 @@
 use App\data\entities\User;
 use davestewart\laravel\crud\repos\CrudRepo;
 
+use davestewart\laravel\crud\services\CrudMetaService;
 use Flash;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Pagination\AbstractPaginator;
@@ -76,7 +77,7 @@ class CrudService
 		/**
 		 * The meta object that provides all info to this CrudService
 		 *
-		 * @var CrudMeta
+		 * @var CrudMetaService
 		 */
 		protected $meta;
 
@@ -161,15 +162,9 @@ class CrudService
 	     */
 		public function initialize(CrudMeta $meta, $route = null)
 		{
-			// meta
-			$this->meta     = $meta;
-
-			// repo
+			// services
 			$this->repo     = \App::make('CrudRepo')->initialize($meta->class);
-			//$this->values   = \App::make('CrudValues')->initialize($meta);
-
-			// initialize meta
-			$this->meta->initialize($this->repo->getFields());
+			$this->meta     = \App::make('CrudMetaService')->initialize($meta, $this->repo->getFields());
 
 			// route
 			if( ! $route )
@@ -215,7 +210,7 @@ class CrudService
 			{
 				// variables
 				$defaults   = \App::make('CrudMeta')->index;
-				$index      = array_merge($defaults, $this->meta->index);
+				$index      = array_merge($defaults, $this->meta->getMeta()->index);
 
 				/** @var string $orderBy */
 				/** @var string $orderDir */
@@ -548,7 +543,7 @@ class CrudService
 		{
 			// prepare data
 			$data               = $this->getData();
-			$meta               = (object) $this->meta;
+			$meta               = (object) $this->meta->getMeta();
 
 			// state
 			$props =
