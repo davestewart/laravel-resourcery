@@ -73,7 +73,7 @@ class CrudMetaService
 					$values = count($fields[$type])
 						? $fields[$type]
 						: $fields['all'];
-					$meta->fields[$key] = implode(' ', $values);
+					$meta->set("fields.$key", implode(' ', $values));
 				}
 			}
 
@@ -237,9 +237,9 @@ class CrudMetaService
 				$field->label           = $this->getLabel($name);
 
 				// if we have a callback, call it
-				if(isset($callback) && method_exists($this, $callback))
+				if(isset($callback) && method_exists($this->meta, $callback))
 				{
-					$field->value   = function($model) use ($callback) { return $this->$callback($model); };
+					$field->value   = function($model) use ($callback) { return $this->meta->$callback($model); };
 				}
 
 				// if we're on the index route, there's no point assigning values as they will be resolved per-model in the for loop
@@ -269,7 +269,7 @@ class CrudMetaService
 					{
 						if( ! method_exists($this->meta, $control->callback) )
 						{
-							throw new \Exception("Callback '{$control->callback}' does not exist on " . __CLASS__);
+							throw new \Exception("Callback '{$control->callback}' does not exist on " . get_class($this->meta));
 						}
 						$field->options     = $this->meta->{$control->callback}($data);
 					}
@@ -422,12 +422,19 @@ class CrudMetaService
 		/**
 		 * Utility function to resolve object properties, including from dot.notation paths
 		 *
-		 * @param   mixed   $model  The model to get the property form
-		 * @param   string  $prop   The property or path to resolve
-		 * @return  mixed           The resolved value
+		 * @param   mixed  $model The model to get the property form
+		 * @param   string $prop  The property or path to resolve
+		 * @return mixed The resolved value
+		 * @throws InvalidPropertyException
 		 */
 		protected function getProperty($model, $prop)
 		{
+			if($prop == null)
+			{
+				//pr($this);
+				throw new InvalidPropertyException($prop, $model);
+			}
+
 			if(is_string($prop))
 			{
 				if(strstr($prop, '.') === FALSE)
