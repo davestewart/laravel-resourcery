@@ -285,7 +285,7 @@ class CrudMetaService
 					$field->old             = $old ? $old : $field->value;
 
 					// attributes
-					//$field->rules           = $this->getRule($name, $action);
+					$field->rules           = $this->getRule($name, $action);
 					$field->view            = $this->meta->views['field'];
 				}
 

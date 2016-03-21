@@ -266,7 +266,12 @@ class CrudControl
 
 		protected function getGroupClasses($field)
 		{
-			$classes    = $field->error ? ['has-error'] : [];
+			$classes    = $field->error
+							? ['has-error']
+							: [];
+			$classes    += strstr($field->rules, 'required') !== FALSE
+							? ['required']
+							: [];
 			$classes    += array_keys($this->classes);
 			return $classes;
 		}
