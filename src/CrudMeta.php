@@ -1,5 +1,6 @@
 <?php namespace davestewart\laravel\crud;
 
+use davestewart\laravel\crud\classes\CrudValidator;
 use davestewart\laravel\crud\errors\InvalidPropertyException;
 use Validator;
 
@@ -24,7 +25,7 @@ class CrudMeta
 {
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// DATA
+	// DATABASE
 
 		/**
 		 * The namespaced class of the Model
@@ -34,36 +35,15 @@ class CrudMeta
 		protected $class        = '\App\Models\Item';
 
 		/**
-		 * Paths to the view files that will render your model's data
+		 * The names of any model relationships
 		 *
-		 * Defaults to the package's catch-all templates
+		 * Should be an array of properties / model methods such as:
 		 *
-		 * @var string[]
+		 * - ['user', 'client', 'event']
+		 *
+		 * @var array
 		 */
-		protected $views =
-		[
-			'create'            => 'vendor.crud.create',
-			'index'             => 'vendor.crud.index',
-			'show'              => 'vendor.crud.show',
-			'edit'              => 'vendor.crud.edit',
-			'form'              => 'vendor.crud.partials.form',
-			'fields'            => 'vendor.crud.partials.fields',
-			'field'             => 'vendor.crud.partials.field',
-			'actions'           => 'vendor.crud.partials.actions',
-			'related'           => 'vendor.crud.partials.related',
-		];
-
-		/**
-		 * Behaviour for index pages
-		 *
-		 * @var int
-		 */
-		protected $index =
-		[
-			'orderBy'           => 'id',
-			'orderDir'          => 'desc',
-			'perPage'           => 50,
-		];
+		protected $relations    = [ ];
 
 		/**
 		 * The attribute to use to determine the title of the model
@@ -73,6 +53,18 @@ class CrudMeta
 		 * @var string
 		 */
 		protected $titleAttr    = 'name';
+
+		/**
+		 * Behaviour for index pages
+		 *
+		 * @var int
+		 */
+		protected $clauses =
+		[
+			'orderBy'           => 'id',
+			'orderDir'          => 'desc',
+			'perPage'           => 50,
+		];
 
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -92,24 +84,29 @@ class CrudMeta
 		 */
 		protected $plural       = 'items';
 
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// DATA
+
 		/**
-		 * Confirmation messages for actions
+		 * Paths to the view files that will render your model's data
 		 *
-		 * Use the placeholder :item to include the item's $singular property
+		 * Defaults to the package's catch-all templates
 		 *
 		 * @var string[]
 		 */
-		protected $messages =
+		protected $views =
 		[
-			'created'           => 'Successfully created :item',
-			'updated'           => 'Successfully updated :item',
-			'deleted'           => 'Successfully deleted :item',
-			'invalid'           => 'The form has errors',
+			'create'            => 'crud::create',
+			'index'             => 'crud::index',
+			'show'              => 'crud::show',
+			'edit'              => 'crud::edit',
+			'form'              => 'crud::partials.form',
+			'fields'            => 'crud::partials.fields',
+			'field'             => 'crud::partials.field',
+			'actions'           => 'crud::partials.actions',
+			'related'           => 'crud::partials.related',
 		];
-
-
-	// -----------------------------------------------------------------------------------------------------------------
-	// FORM
 
 		/**
 		 * Fields to show for each action:
@@ -140,6 +137,21 @@ class CrudMeta
 			'edit'			    => ':fillable',
 			'show'			    => ':visible',
 		];
+
+		/**
+		 * Fields to keep secret when repopulating the form
+		 *
+		 * @var string[]
+		 */
+		protected $hidden =
+		[
+			'password',
+			'password_confirm'
+		];
+
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// FORM
 
 		/**
 		 * Optional array of labels for fields
@@ -225,16 +237,23 @@ class CrudMeta
 
 		protected $rules_update = null;
 
-		/**
-		 * Fields to keep secret when repopulating the form
-		 *
-		 * @var string[]
-		 */
-		protected $hidden =
-		[
-			'password',
-			'password_confirm'
-		];
+
+		// defaults
+		// placeholders
+		// errors
+
+		// ways to get values
+		// property
+		// property_action
+		// getProperty
+		// getPropertyOptions($action, $model
+		// getPropertyDefault
+		// getPropertyPlaceholder
+		// getPropertyAttributes
+		// getPropertyHtml
+
+
+
 
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -336,8 +355,21 @@ class CrudMeta
 
 		public function validate($input, $rules = null, $action = null)
 		{
-			return Validator::make($input, $rules);
+			return new CrudValidator($input, $rules);
 		}
 
+
+	// ------------------------------------------------------------------------------------------------
+	// UTILITIES
+
+		public function toArray()
+		{
+			$arr = [];
+			foreach($this as $key => $value)
+			{
+				$arr[$key] = $value;
+			}
+			return $arr;
+		}
 
 }
