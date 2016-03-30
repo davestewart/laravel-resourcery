@@ -93,9 +93,9 @@ class CrudMetaService
 	// -----------------------------------------------------------------------------------------------------------------
 	// METHODS
 
-		public function validate($input, $action = null)
+		public function validate($input, $action = null, $messages = null)
 		{
-			return $this->meta->validate($input, $this->getRules($action), $action);
+			return $this->meta->validate($input, $this->getRules($action), $action, $messages);
 		}
 
 
@@ -120,17 +120,6 @@ class CrudMetaService
 		}
 
 		/**
-		 * Gets confirmation messages according to the task type
-		 *
-		 * @param   string  $type       The type of message to return; must be in the $messages attribute
-		 * @return  string              The populated message
-		 */
-		public function getMessage($type)
-		{
-			return str_replace(':item', $this->meta->singular, $this->meta->messages[$type]);
-		}
-
-		/**
 		 * Returns the view path for the specified action
 		 *
 		 * @param   string  $action     The action to get view for
@@ -152,10 +141,11 @@ class CrudMetaService
 		 */
 		public function getTitle($model)
 		{
+			$attr = $this->meta->titleAttr ?: 'title';
 			return $model
-				? property_exists($model, 'title')
-					? $model->title
-					: $model->{$this->meta->titleAttr}
+				? property_exists($model, $attr)
+					? $model->$attr
+					: null
 				: null;
 		}
 
@@ -171,7 +161,7 @@ class CrudMetaService
 		{
 			return array_key_exists($name, $this->meta->labels)
 				? $this->meta->labels[$name]
-				: ucwords(str_replace('_', ' ', $name));
+				: trim(ucwords(preg_replace('/[_\W]+/', ' ', $name)));
 		}
 
 		/**
@@ -191,14 +181,15 @@ class CrudMetaService
 			// grab names
 			if(is_string($names))
 			{
-				preg_match_all('/[:\.\w]+/', $names, $matches);
+				preg_match_all('/\S+/', $names, $matches);
 				$names = $matches[0];
 			}
 
 			// loop over fields and build meta
 			foreach( (array) $names as $index => $name)
 			{
-				$fields[$name] = $this->getField($action, $name, $data, $errors);
+				$field = $this->getField($action, $name, $data, $errors);
+				$fields[$field->id] = $field;
 			}
 
 			// return
@@ -233,6 +224,7 @@ class CrudMetaService
 				}
 
 				// field name & label
+				$field->id              = preg_replace('/^_+|_+$/', '', preg_replace('/\W+/', '_', $name));
 				$field->name            = $name;
 				$field->label           = $this->getLabel($name);
 
@@ -275,9 +267,10 @@ class CrudMetaService
 					}
 
 					// errors
-					if($errors && $errors->has($name))
+					$errorName = str_replace(']', '', str_replace('[', '.', $name));
+					if($errors && $errors->has($errorName))
 					{
-						$field->error       = $errors->first($name);
+						$field->error       = $errors->first($errorName);
 					}
 
 					// old values
@@ -306,7 +299,9 @@ class CrudMetaService
 			// variables
 			$method = 'rules_' . $action;
 			$rules  = $this->meta->rules;
-			$extra  = property_exists($this->meta, $method) ? $this->meta->$method : null;
+			$extra  = property_exists($this->meta, $method)
+						? $this->meta->$method
+						: null;
 
 			// debug
 			//pr($method, $rules, $extra);
@@ -339,7 +334,8 @@ class CrudMetaService
 		 */
 		public function getRule($name, $action = null)
 		{
-			return $this->getRules($action)[$name];
+			$rules = $this->getRules($action);
+			return isset($rules[$name]) ? $rules[$name] : null;
 		}
 
 
@@ -392,7 +388,7 @@ class CrudMetaService
 		{
 			// variables
 			$controls   = $this->getControls($action);
-			$data       = $controls[$name];
+			$data       = isset($controls[$name]) ? $controls[$name] : 'text';
 
 			// single control type
 			if(strstr($data, ':') === FALSE)
@@ -414,7 +410,8 @@ class CrudMetaService
 				}
 				else
 				{
-					return new ControlProps($controls[$action], $controls['options']);
+					$options = isset($controls['options']) ? $controls['options'] : null;
+					return new ControlProps($controls[$action], $options);
 				}
 			}
 		}
@@ -431,19 +428,32 @@ class CrudMetaService
 		{
 			if($prop == null)
 			{
-				//pr($this);
 				throw new InvalidPropertyException($prop, $model);
 			}
 
 			if(is_string($prop))
 			{
-				if(strstr($prop, '.') === FALSE)
+				// array[property]
+				if(strstr($prop, '[') !== FALSE)
+				{
+					preg_match_all('/[\w_]+/', $prop, $matches);
+					$prop = $matches[0];
+				}
+
+				// related.property
+				else if(strstr($prop, '.') !== FALSE)
+				{
+					$prop = explode('.', $prop);
+				}
+
+				// normal property
+				else
 				{
 					return $model->$prop;
 				}
-				$prop = explode('.', $prop);
 			}
-			return array_reduce($prop, function($obj, $name){ return $obj->$name; }, $model);
+
+			return array_reduce($prop, function($obj, $name){ return isset($obj->$name) ? $obj->$name : null; }, $model);
 		}
 
 }
