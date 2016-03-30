@@ -1,6 +1,7 @@
 <?php namespace davestewart\laravel\crud\repos;
 
 use Eloquent;
+use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Collection;
 use Request;
 
@@ -40,6 +41,16 @@ class EloquentRepo extends CrudRepo
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// DATA ACCESS
+
+		/**
+		 * Create a new model
+		 *
+		 * @return Eloquent|Collection
+		 */
+		public function create()
+		{
+			return new $this->class;
+		}
 
 		/**
 		 * Returns all items
@@ -136,8 +147,8 @@ class EloquentRepo extends CrudRepo
 			}
 
 			// filter
-			$fillable   = $this->getFields('all');
-			$fields     = array_combine($fillable, $fillable);
+			$fields     = $this->getFields('all');
+			$fields     = array_combine($fields, $fields);
 			$where      = array_intersect_key($params, $fields);
 
 			// query
@@ -196,7 +207,7 @@ class EloquentRepo extends CrudRepo
 			$types  = $name == null ? ['all', 'visible', 'fillable', 'hidden'] : [$name];
 
 			// variables
-			$model  = \App::make($this->class);
+			$model  = $this->create();
 			$data   = [];
 
 			// get types
@@ -224,6 +235,33 @@ class EloquentRepo extends CrudRepo
 
 			// return
 			return $name == null ? $data : $data[$name];
+		}
+
+		/**
+		 * Loads related items on a model
+		 *
+		 * @param   mixed       $data
+		 * @param   array       $relations
+		 */
+		public function loadRelated($data, array $relations)
+		{
+			// get original data source
+			$items = $data instanceof AbstractPaginator
+				? $data->items()
+				: $data;
+
+			// if we have at least one data item, look to eager load
+			if(count($items))
+			{
+				$item  = $items[0];
+				foreach($relations as $relation)
+				{
+					if( method_exists($item, $relation) && ! isset($item->$relation) )
+					{
+						$data->load($relation);
+					}
+				}
+			}
 		}
 
 

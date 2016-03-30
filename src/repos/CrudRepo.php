@@ -24,6 +24,16 @@ class CrudRepo
 	// DATA ACCESS
 
 		/**
+		 * Returns a new, empty model
+		 *
+		 * @return array
+		 */
+		public function create()
+		{
+			return [];
+		}
+
+		/**
 		 * Returns multiple items
 		 *
 		 * @param null $limit
@@ -54,7 +64,7 @@ class CrudRepo
 		 */
 		public function update($id, $data)
 		{
-			return true;
+			return (object) [];
 		}
 
 		/**
@@ -65,7 +75,7 @@ class CrudRepo
 		 */
 		public function store($data)
 		{
-			return true;
+			return (object) [];
 		}
 
 		/**
@@ -86,9 +96,9 @@ class CrudRepo
 		/**
 		 * Updates the order by clause
 		 *
-		 * @param        $column
-		 * @param string $direction
-		 * @return CrudRepo
+		 * @param   string      $column
+		 * @param   string      $direction
+		 * @return  CrudRepo
 		 */
 		public function orderBy($column, $direction = 'asc')
 		{
@@ -98,8 +108,8 @@ class CrudRepo
 		/**
 		 * Adds filters to the query
 		 *
-		 * @param array $params
-		 * @return CrudRepo
+		 * @param   array       $params
+		 * @return  CrudRepo
 		 */
 		public function filter(array $params)
 		{
@@ -118,6 +128,17 @@ class CrudRepo
 		public function getFields()
 		{
 			return [];
+		}
+
+		/**
+		 * Loads related items on a model
+		 *
+		 * @param   mixed       $items
+		 * @param   array       $relations
+		 */
+		public function loadRelated($items, array $relations)
+		{
+			// implement in subclass
 		}
 
 }
