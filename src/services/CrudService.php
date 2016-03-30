@@ -28,6 +28,7 @@ use View;
  *
  * Magic response properties:
  *
+ * @property 	string                                         $data
  * @property 	string                                         $success
  * @property 	\Symfony\Component\HttpFoundation\Response     $response
  * @property 	\Symfony\Component\HttpFoundation\JsonResponse $json
@@ -70,7 +71,7 @@ class CrudService
 		protected $response;
 
 
-		// meta
+		// services
 
 		/**
 		 * The meta object that provides all info to this CrudService
@@ -85,6 +86,14 @@ class CrudService
 		 * @var CrudRepo
 		 */
 		protected $repo;
+
+
+		/**
+		 * Manages messages and translations
+		 *
+		 * @var CrudLangService
+		 */
+		protected $lang;
 
 
 		// data
@@ -162,6 +171,7 @@ class CrudService
 		{
 			// services
 			$this->repo     = \App::make('CrudRepo')->initialize($meta->class);
+			$this->lang     = \App::make('CrudLangService')->initialize($meta);
 			$this->meta     = \App::make('CrudMetaService')->initialize($meta, $this->repo->getFields());
 
 			// route
@@ -207,13 +217,13 @@ class CrudService
 			if( ! is_object($data) )
 			{
 				// variables
-				$defaults   = \App::make('CrudMeta')->index;
-				$index      = array_merge($defaults, $this->meta->getMeta()->index);
+				$defaults   = \App::make('CrudMeta')->clauses;
+				$clauses    = array_merge($defaults, $this->meta->getMeta()->clauses);
 
 				/** @var string $orderBy */
 				/** @var string $orderDir */
 				/** @var int $perPage */
-				extract($index);
+				extract($clauses);
 
 				// data
 				$data   = $this->repo
@@ -302,7 +312,7 @@ class CrudService
 			$this->repo->destroy($id);
 
 			// update response
-			$this->setStatus(true, $this->meta->getMessage('deleted'));
+			$this->setStatus(true, $this->lang->status('deleted'));
 			$this->response     = $this->makeRedirect();
 
 			// return;
@@ -334,7 +344,11 @@ class CrudService
 			}
 
 			// validate
-			if( ! $force )
+			if($force)
+			{
+				$this->input = $input;
+			}
+			else
 			{
 				$this->validate($input, $action);
 			}
@@ -348,12 +362,12 @@ class CrudService
 				if($action == 'store')
 				{
 					$this->repo->store($input);
-					$this->setStatus(true, $this->meta->getMessage('created'));
+					$this->setStatus(true, $this->lang->status('created'));
 				}
 				else if($action == 'update')
 				{
 					$this->repo->update($id, $input);
-					$this->setStatus(true, $this->meta->getMessage('updated'));
+					$this->setStatus(true, $this->lang->status('updated'));
 				}
 				//pd('data', $this->data);
 
@@ -368,9 +382,10 @@ class CrudService
 		/**
 		 * Validates input, optionally with alternate rules
 		 *
-		 * @param   array           $input
-		 * @param   array|null      $rules
-		 * @return  self
+		 * @param   array      $input
+		 * @param null         $action
+		 * @param   array|null $rules
+		 * @return CrudService
 		 */
 		public function validate($input, $action = null, $rules = null)
 		{
@@ -393,7 +408,7 @@ class CrudService
 			if ($validator->fails())
 			{
 				// properties
-				$this->setStatus(false, $this->meta->getMessage('invalid'));
+				$this->setStatus(false, $this->lang->status('invalid'));
 				$this->errors	= $validator->errors();
 
 				// build response
@@ -409,13 +424,15 @@ class CrudService
 		/**
 		 * Explicitly set the current operation to fail with a message
 		 *
-		 * @param $message
+		 * @param   string      $message    The reason for failing
+		 * @return  self
 		 */
 		public function fail($message)
 		{
 			$this->setStatus(false, $message);
 			$this->response = Redirect::back()
 				->withInput($this->getInput());
+			return $this;
 		}
 
 
@@ -515,6 +532,10 @@ class CrudService
 		 */
 		public function getData()
 		{
+			if($this->action == 'create')
+			{
+				return $this->repo->create();
+			}
 			if(in_array($this->action, ['index', 'show', 'edit']) && ! $this->loaded )
 			{
 				$this->loadRelated();
@@ -623,7 +644,7 @@ class CrudService
 		public function getInput()
 		{
 			$input = array_merge([], $this->input);
-			array_forget($input, $this->meta->hidden);
+			array_forget($input, $this->meta->getMeta()->hidden);
 			return $input;
 		}
 
@@ -669,10 +690,6 @@ class CrudService
 		{
 			switch($name)
 			{
-				case 'success':
-					return $this->success;
-					break;
-
 				case 'response':
 					return $this->makeResponse();
 					break;
@@ -683,6 +700,16 @@ class CrudService
 
 				case 'view':
 					return $this->makeView();
+					break;
+
+				case 'success':
+					return $this->success;
+					break;
+
+				case 'data':
+					return $this->data
+						? $this->data
+						: (object) $this->input;
 					break;
 			}
 
@@ -699,26 +726,11 @@ class CrudService
 		 */
 		protected function loadRelated()
 		{
-			// variables
-			$relations  = $this->meta->getRelated($this->action);
-			$items      = $this->data instanceof AbstractPaginator
-							? $this->data->items()
-							: $this->data;
-
-			// if we have at least one data item, look to eager load
-			if(count($items))
+			$relations = $this->meta->getRelated($this->action);
+			if($relations)
 			{
-				$item  = $items[1];
-				foreach($relations as $relation)
-				{
-					if( ! isset($item->$relation) )
-					{
-						$this->data->load($relation);
-					}
-				}
+				$this->repo->loadRelated($this->data, $relations);
 			}
-
-			// flag loaded
 			$this->loaded = true;
 		}
 
@@ -812,16 +824,17 @@ class CrudService
 		/**
 		 * Single redirect method, with CRUD route fallback
 		 *
-		 * @param null $route
+		 * @param null  $route
+		 * @param array $data
 		 * @return RedirectResponse
 		 */
-		protected function makeRedirect($route = null)
+		protected function makeRedirect($route = null, $data = [])
 		{
 			if($route == null)
 			{
 				$route = $this->getRedirect();
 			}
-			return Redirect::to($route)->with($this->getViewData());
+			return Redirect::to($route)->with($data);
 		}
 
 

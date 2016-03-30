@@ -2,6 +2,21 @@
 
 return [
 
+	// human-readable method names
+	'action' =>
+	[
+		'index'         => 'index',
+		'show'          => 'show',
+		'view'          => 'view',
+		'create'        => 'create',
+		'edit'          => 'edit',
+		'store'         => 'store',
+		'save'          => 'save',
+		'update'        => 'create',
+		'delete'        => 'delete',
+		'destroy'       => 'destroy',
+	],
+
 	// page titles
 	'title' =>
 	[
@@ -49,21 +64,6 @@ return [
 		'not_deleted'   => 'Unable to delete :singular',
 		'invalid'       => 'The form has errors',
 		'error'         => 'There was an error',
-	],
-
-	// human-readable method names
-	'method' =>
-	[
-		'index'         => 'index',
-		'show'          => 'show',
-		'view'          => 'view',
-		'create'        => 'create',
-		'edit'          => 'edit',
-		'store'         => 'store',
-		'save'          => 'save',
-		'update'        => 'create',
-		'delete'        => 'delete',
-		'destroy'       => 'destroy',
 	],
 
 ];
