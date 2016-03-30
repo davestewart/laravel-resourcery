@@ -2,6 +2,7 @@
 
 use davestewart\laravel\crud\CrudField;
 use davestewart\laravel\crud\errors\InvalidPropertyException;
+use Form;
 use Illuminate\Support\MessageBag;
 use Input;
 use Session;
@@ -21,6 +22,9 @@ class CrudControl
 		/** @var array  */
 		protected $attributes;
 
+		/** @var array  */
+		protected $columns;
+
 
 	// ------------------------------------------------------------------------------------------------
 	// instantiation
@@ -30,16 +34,16 @@ class CrudControl
 			return call_user_func_array([get_called_class(), 'create'], array_merge([$name], $params));
 		}
 
-	/**
-	 * Creates a control without
-	 *
-	 * @param   string          $type
-	 * @param   string          $name
-	 * @param   array|null      $options
-	 * @param   array           $input
-	 * @param   MessageBag|null $errors
-	 * @return  self
-	 */
+		/**
+		 * Creates a control without
+		 *
+		 * @param   string          $type
+		 * @param   string          $name
+		 * @param   array|null      $options
+		 * @param   array           $input
+		 * @param   MessageBag|null $errors
+		 * @return  self
+		 */
 		public static function create($type, $name, array $options = null, array $input = null, MessageBag $errors = null)
 		{
 			// variables
@@ -55,7 +59,7 @@ class CrudControl
 			$field->value   = is_object($input) ? $input->$name : $input[$name];
 			$field->error   = $errors ? $errors->first($name) : null;
 			$field->options = $options;
-			$field->view    = 'vendor.crud.partials.field';
+			$field->view    = 'crud::partials.field';
 
 			// debug
 			//pd($field);
@@ -78,9 +82,12 @@ class CrudControl
 		protected function initialize()
 		{
 			$this
-				->setAttr('id', $this->field->name)
+				->setAttr('id', $this->field->id)
 				->setAttr('class', 'form-control')
 				->setAttr('autocomplete', 'off');
+
+			$this->columns['sm'] = [6, 6];
+			$this->columns['md'] = [2, 10];
 
 			if(preg_match('/\brequired\b/', $this->field->rules))
 			{
@@ -184,6 +191,10 @@ class CrudControl
 			{
 				return $this->attributes[$name];
 			}
+			else if($name == 'label')
+			{
+				return $this->label();
+			}
 			else if($name == 'element')
 			{
 				return $this->render(true);
@@ -232,6 +243,9 @@ class CrudControl
 			$attributes = $this->getControlAttrs();
 			$classes    = implode(' ', $this->getGroupClasses($field));
 
+			// label
+			$label      = $this->make_label($field, ['class' =>'col-sm-2 control-label']);
+
 			// control
 			$method     = "make_{$field->type}";
 			$method     = method_exists($this, $method) ? $method : 'make_text';
@@ -247,10 +261,10 @@ class CrudControl
 							: $field->view;
 
 			// return
-			return view($view, compact('field', 'control', 'classes'));
+			return view($view, compact('field', 'control', 'label', 'classes'));
 		}
 
-		public function debug()
+		public function __toString()
 		{
 			return '<pre>' . print_r($this, 1) . '</pre>';
 		}
@@ -276,8 +290,4 @@ class CrudControl
 			return $classes;
 		}
 
-		public function __toString()
-		{
-			return (string) $this->render();
-		}
 }

@@ -6,6 +6,16 @@ use Form;
 class FormControl extends CrudControl
 {
 
+	protected function make_label(CrudField $field, array $attrs = [])
+	{
+		return Form::label($field->id, $field->label, $attrs);
+	}
+
+	protected function make_info(CrudField $field, array $attrs = [])
+	{
+		return Form::text($field->name, $field->value, array_merge($attrs, ['readonly' => 'readonly']));
+	}
+
 	protected function make_text(CrudField $field, array $attrs = [])
 	{
 		return Form::input($field->type, $field->name, $field->value, $attrs);
@@ -14,11 +24,6 @@ class FormControl extends CrudControl
 	protected function make_textarea(CrudField $field, array $attrs = [])
 	{
 		return Form::textarea($field->name, $field->value, $attrs);
-	}
-
-	protected function make_info(CrudField $field, array $attrs = [])
-	{
-		return Form::text($field->name, $field->value, array_merge($attrs, ['readonly' => 'readonly']));
 	}
 
 	protected function make_select(CrudField $field, array $attrs = [])
@@ -55,7 +60,7 @@ class FormControl extends CrudControl
 		foreach($field->options as $value => $label)
 		{
 			// common values
-			$id     = $field->name . '_' . $value;
+			$id     = $field->id . '_' . $value;
 			$name   = $field->name;
 
 			// control-specific values

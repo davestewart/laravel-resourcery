@@ -1,10 +1,12 @@
 <?php namespace davestewart\laravel\crud;
 
 use davestewart\laravel\crud\controls\CrudControl;
+use davestewart\laravel\crud\errors\InvalidPropertyException;
 
 /**
  * Class FieldMeta
  *
+ * @property    string          $id
  * @property    string          $name
  * @property    string          $label
  * @property    string          $value
@@ -22,6 +24,9 @@ class CrudField
 
 	// ------------------------------------------------------------------------------------------------
 	// PROPERTIES
+
+		/** @var string */
+		protected $id;
 
 		/** @var string */
 		protected $name;
@@ -72,11 +77,20 @@ class CrudField
 			{
 				return \App::make('CrudControl', [$this]);
 			}
-			else if($name == 'dump')
-			{
-				return '<pre>' . print_r($this, 1) . '</pre>';
-			}
+			throw new InvalidPropertyException($name, __CLASS__);
 
+		}
+
+		public function __call($name, $arguments)
+		{
+			if($name == 'control')
+			{
+				return $this->control->render();
+			}
+			if($name == 'label')
+			{
+				return $this->control->label();
+			}
 		}
 
 		public function value($model)
@@ -99,13 +113,18 @@ class CrudField
 			return array_reduce($names, function($obj, $name){ return $obj->$name; }, $obj);
 		}
 
+		public function render($view = null)
+		{
+			return $this->control->render($view);
+		}
+
 
 	// ------------------------------------------------------------------------------------------------
 	// UTILITIES
 
 		public function __toString()
 		{
-			return $this->dump;
+			return '<pre>' . print_r($this, 1) . '</pre>';
 		}
 
 }
