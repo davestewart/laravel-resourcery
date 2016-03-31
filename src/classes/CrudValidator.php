@@ -11,7 +11,7 @@ class CrudValidator extends Validator
 		$trans      = \App::make('translator');
 
 		/** @var array $messages */
-		$messages   = trans('crud::validation');
+		$messages   = trans('resourcery::validation');
 
 		// parent
 		parent::__construct($trans, $data, $rules, $messages);

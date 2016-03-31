@@ -40,14 +40,14 @@ namespace davestewart\resourcery
 		public function boot()
 		{
 			// vendor folders
-			$this->loadTranslationsFrom(__DIR__ . '/lang', 'crud');
-			$this->loadViewsFrom(__DIR__ . '/views', 'crud');
+			$this->loadTranslationsFrom(__DIR__ . '/lang', 'resourcery');
+			$this->loadViewsFrom(__DIR__ . '/views', 'resourcery');
 
 			// publishes
 			$this->publishes
 			([
-				__DIR__ . '/views' => base_path('resources/views/vendor/crud'),
-				__DIR__ . '/lang' => base_path('resources/lang/vendor/crud'),
+				__DIR__ . '/views' => base_path('resources/views/vendor/resourcery'),
+				__DIR__ . '/lang' => base_path('resources/lang/vendor/resourcery'),
 			]);
 		}
 

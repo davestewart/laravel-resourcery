@@ -59,7 +59,7 @@ class CrudControl
 			$field->value   = is_object($input) ? $input->$name : $input[$name];
 			$field->error   = $errors ? $errors->first($name) : null;
 			$field->options = $options;
-			$field->view    = 'crud::partials.field';
+			$field->view    = 'resourcery::partials.field';
 
 			// debug
 			//pd($field);

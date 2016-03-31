@@ -41,7 +41,7 @@ class CrudLangService
 
 		public function validation()
 		{
-			return trans('crud::validation');
+			return trans('resourcery::validation');
 		}
 
 		public function message($group, $key, $values = [])
@@ -86,7 +86,7 @@ class CrudLangService
 
 		public function trans($file, $group, $key, $values = [])
 		{
-			return $this->translator->trans("crud::$file.$group.$key", $values);
+			return $this->translator->trans("resourcery::$file.$group.$key", $values);
 		}
 
 }

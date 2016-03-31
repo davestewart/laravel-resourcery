@@ -97,15 +97,15 @@ class CrudMeta
 		 */
 		protected $views =
 		[
-			'create'            => 'crud::create',
-			'index'             => 'crud::index',
-			'show'              => 'crud::show',
-			'edit'              => 'crud::edit',
-			'form'              => 'crud::partials.form',
-			'fields'            => 'crud::partials.fields',
-			'field'             => 'crud::partials.field',
-			'actions'           => 'crud::partials.actions',
-			'related'           => 'crud::partials.related',
+			'create'            => 'resourcery::create',
+			'index'             => 'resourcery::index',
+			'show'              => 'resourcery::show',
+			'edit'              => 'resourcery::edit',
+			'form'              => 'resourcery::partials.form',
+			'fields'            => 'resourcery::partials.fields',
+			'field'             => 'resourcery::partials.field',
+			'actions'           => 'resourcery::partials.actions',
+			'related'           => 'resourcery::partials.related',
 		];
 
 		/**
