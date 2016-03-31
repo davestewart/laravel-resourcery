@@ -1,7 +1,7 @@
-<?php namespace davestewart\laravel\crud;
+<?php namespace davestewart\resourcery;
 
-use davestewart\laravel\crud\controls\CrudControl;
-use davestewart\laravel\crud\errors\InvalidPropertyException;
+use davestewart\resourcery\controls\CrudControl;
+use davestewart\resourcery\errors\InvalidPropertyException;
 
 /**
  * Class FieldMeta

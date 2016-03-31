@@ -1,6 +1,6 @@
-<?php namespace davestewart\laravel\crud\controls;
+<?php namespace davestewart\resourcery\controls;
 
-use davestewart\laravel\crud\CrudField;
+use davestewart\resourcery\CrudField;
 use Form;
 
 class FormControl extends CrudControl

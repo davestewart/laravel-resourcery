@@ -1,8 +1,8 @@
-<?php namespace davestewart\laravel\crud\services;
+<?php namespace davestewart\resourcery\services;
 
-use davestewart\laravel\crud\CrudField;
-use davestewart\laravel\crud\CrudMeta;
-use davestewart\laravel\crud\errors\InvalidPropertyException;
+use davestewart\resourcery\CrudField;
+use davestewart\resourcery\CrudMeta;
+use davestewart\resourcery\errors\InvalidPropertyException;
 use ArrayObject;
 use Illuminate\Support\MessageBag;
 use Input;
@@ -13,7 +13,7 @@ use Validator;
  *
  * Responsible for turning Meta information into fields and controls
  *
- * @package davestewart\laravel\crud\services
+ * @package davestewart\resourcery\services
  */
 class CrudMetaService
 {

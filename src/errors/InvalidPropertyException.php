@@ -1,6 +1,6 @@
 <?php
 
-namespace davestewart\laravel\crud\errors;
+namespace davestewart\resourcery\errors;
 
 
 class InvalidPropertyException extends \Exception

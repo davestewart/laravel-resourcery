@@ -1,4 +1,4 @@
-<?php namespace davestewart\laravel\crud\classes;
+<?php namespace davestewart\resourcery\classes;
 
 use Illuminate\Translation\Translator;
 use Illuminate\Validation\Validator;

@@ -1,4 +1,4 @@
-<?php namespace davestewart\laravel\crud\repos;
+<?php namespace davestewart\resourcery\repos;
 
 use Illuminate\Database\Eloquent\Collection;
 

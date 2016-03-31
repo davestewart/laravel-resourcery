@@ -1,7 +1,7 @@
-<?php namespace davestewart\laravel\crud;
+<?php namespace davestewart\resourcery;
 
-use davestewart\laravel\crud\classes\CrudValidator;
-use davestewart\laravel\crud\errors\InvalidPropertyException;
+use davestewart\resourcery\classes\CrudValidator;
+use davestewart\resourcery\errors\InvalidPropertyException;
 use Validator;
 
 /**

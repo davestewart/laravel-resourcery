@@ -1,7 +1,7 @@
-<?php namespace davestewart\laravel\crud\controls;
+<?php namespace davestewart\resourcery\controls;
 
-use davestewart\laravel\crud\CrudField;
-use davestewart\laravel\crud\errors\InvalidPropertyException;
+use davestewart\resourcery\CrudField;
+use davestewart\resourcery\errors\InvalidPropertyException;
 use Form;
 use Illuminate\Support\MessageBag;
 use Input;

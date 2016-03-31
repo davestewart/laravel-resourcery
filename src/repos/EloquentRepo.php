@@ -1,4 +1,4 @@
-<?php namespace davestewart\laravel\crud\repos;
+<?php namespace davestewart\resourcery\repos;
 
 use Eloquent;
 use Illuminate\Pagination\AbstractPaginator;
@@ -7,7 +7,7 @@ use Request;
 
 /**
  * Class CrudModel
- * @package davestewart\laravel\crud
+ * @package davestewart\resourcery
  */
 class EloquentRepo extends CrudRepo
 {

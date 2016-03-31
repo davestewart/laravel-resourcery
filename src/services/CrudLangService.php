@@ -1,9 +1,9 @@
 <?php
 
-namespace davestewart\laravel\crud\services;
+namespace davestewart\resourcery\services;
 
 
-use davestewart\laravel\crud\CrudMeta;
+use davestewart\resourcery\CrudMeta;
 use Illuminate\Translation\Translator;
 
 class CrudLangService

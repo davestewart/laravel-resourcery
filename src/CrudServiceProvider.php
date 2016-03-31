@@ -1,6 +1,6 @@
 <?php
 
-namespace davestewart\laravel\crud
+namespace davestewart\resourcery
 {
 	use Illuminate\Support\ServiceProvider;
 
@@ -9,7 +9,7 @@ namespace davestewart\laravel\crud
 	 *
 	 * Provides default functionality for Eloquent models
 	 *
-	 * @package davestewart\laravel\crud
+	 * @package davestewart\resourcery
 	 */
 	class CrudServiceProvider extends ServiceProvider {
 
@@ -21,15 +21,15 @@ namespace davestewart\laravel\crud
 		public function register()
 		{
 			// services
-			$this->app->bind('CrudService',     'davestewart\laravel\crud\services\CrudService');
-			$this->app->bind('CrudMetaService', 'davestewart\laravel\crud\services\CrudMetaService');
-			$this->app->bind('CrudLangService', 'davestewart\laravel\crud\services\CrudLangService');
+			$this->app->bind('CrudService',     'davestewart\resourcery\services\CrudService');
+			$this->app->bind('CrudMetaService', 'davestewart\resourcery\services\CrudMetaService');
+			$this->app->bind('CrudLangService', 'davestewart\resourcery\services\CrudLangService');
 
 			// objects
-			$this->app->bind('CrudMeta',        'davestewart\laravel\crud\CrudMeta');
-			$this->app->bind('CrudField',       'davestewart\laravel\crud\CrudField');
-			$this->app->bind('CrudRepo',        'davestewart\laravel\crud\repos\EloquentRepo');
-			$this->app->bind('CrudControl',     'davestewart\laravel\crud\controls\FormControl');
+			$this->app->bind('CrudMeta',        'davestewart\resourcery\CrudMeta');
+			$this->app->bind('CrudField',       'davestewart\resourcery\CrudField');
+			$this->app->bind('CrudRepo',        'davestewart\resourcery\repos\EloquentRepo');
+			$this->app->bind('CrudControl',     'davestewart\resourcery\controls\FormControl');
 		}
 
 		/**
@@ -57,7 +57,7 @@ namespace davestewart\laravel\crud
 namespace
 {
 
-	use davestewart\laravel\crud\CrudField;
+	use davestewart\resourcery\CrudField;
 
 	if( ! function_exists('control') )
 	{
