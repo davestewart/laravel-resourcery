@@ -39,15 +39,18 @@ namespace davestewart\resourcery
 		 */
 		public function boot()
 		{
+			// variables
+			$resources = realpath(__DIR__ . '/../') . '/resources/';
+
 			// vendor folders
-			$this->loadTranslationsFrom(__DIR__ . '/lang', 'resourcery');
-			$this->loadViewsFrom(__DIR__ . '/views', 'resourcery');
+			$this->loadViewsFrom($resources . 'views', 'resourcery');
+			$this->loadTranslationsFrom($resources . 'lang', 'resourcery');
 
 			// publishes
 			$this->publishes
 			([
-				__DIR__ . '/views' => base_path('resources/views/vendor/resourcery'),
-				__DIR__ . '/lang' => base_path('resources/lang/vendor/resourcery'),
+				$resources . 'views' => base_path('resources/views/vendor/resourcery'),
+				$resources . 'lang' => base_path('resources/lang/vendor/resourcery'),
 			]);
 		}
 
