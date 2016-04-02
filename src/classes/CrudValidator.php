@@ -15,6 +15,12 @@ class CrudValidator extends Validator
 
 		// parent
 		parent::__construct($trans, $data, $rules, $messages);
+
+		// set up machinery for unique validation
+		$app = app();
+		if (isset($app['validation.presence'])) {
+			$this->setPresenceVerifier($app['validation.presence']);
+		}
 	}
 
 	protected function getInlineMessage($attribute, $lowerRule, $source = null)
