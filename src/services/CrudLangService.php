@@ -46,7 +46,7 @@ class CrudLangService
 
 		public function message($group, $key, $values = [])
 		{
-			return $this->trans('message', $group, $key, $values);
+			return $this->trans('messages', $group, $key, $values);
 		}
 
 
