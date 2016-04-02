@@ -26,6 +26,19 @@ class EloquentRepo extends CrudRepo
 	// INSTANTIATION
 
 		/**
+		 * EloquentRepo constructor
+		 *
+		 * @param string $class
+		 */
+		function __construct($class = null)
+		{
+			if($class)
+			{
+				$this->initialize($class);
+			}
+		}
+
+		/**
 		 * Initialize the repo with a model's class
 		 *
 		 * @param   string  $class
@@ -45,11 +58,12 @@ class EloquentRepo extends CrudRepo
 		/**
 		 * Create a new model
 		 *
-		 * @return Eloquent|Collection
+		 * @param array $data
+		 * @return Eloquent
 		 */
-		public function create()
+		public function create($data = [])
 		{
-			return new $this->class;
+			return new $this->class($data);
 		}
 
 		/**
@@ -101,7 +115,7 @@ class EloquentRepo extends CrudRepo
 		 */
 		public function store($data)
 		{
-			return $this->call('create', $data);
+			return $this->create($data)->save();
 		}
 
 		/**

@@ -2,6 +2,11 @@
 
 use Illuminate\Database\Eloquent\Collection;
 
+/**
+ * Class CrudRepo
+ *
+ * @package davestewart\resourcery\repos
+ */
 class CrudRepo
 {
 
@@ -26,11 +31,12 @@ class CrudRepo
 		/**
 		 * Returns a new, empty model
 		 *
-		 * @return array
+		 * @param array $data
+		 * @return mixed
 		 */
-		public function create()
+		public function create($data = [])
 		{
-			return [];
+			return (object) [];
 		}
 
 		/**
