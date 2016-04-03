@@ -1,4 +1,4 @@
-<?php namespace davestewart\resourcery\classes;
+<?php namespace davestewart\resourcery\classes\validation;
 
 use Illuminate\Translation\Translator;
 use Illuminate\Validation\Validator;
