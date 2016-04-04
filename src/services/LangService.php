@@ -6,7 +6,7 @@ namespace davestewart\resourcery\services;
 use davestewart\resourcery\CrudMeta;
 use Illuminate\Translation\Translator;
 
-class CrudLangService
+class LangService
 {
 
 	// ------------------------------------------------------------------------------------------------
