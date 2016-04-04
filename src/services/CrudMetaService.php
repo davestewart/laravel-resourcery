@@ -91,15 +91,6 @@ class CrudMetaService
 
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// METHODS
-
-		public function validate($input, $action = null, $messages = null)
-		{
-			return $this->meta->validate($input, $this->getRules($action), $action, $messages);
-		}
-
-
-	// -----------------------------------------------------------------------------------------------------------------
 	// GETTERS
 
 		public function getMeta()
@@ -290,11 +281,13 @@ class CrudMetaService
 		 * Gets the list of fields for a certain action
 		 *
 		 * Combines or returns rules from $rules_store and $rules_update
+		 * Also injects the id where the unique:table,column is found
 		 *
 		 * @param null $action
+		 * @param null $id
 		 * @return mixed|null|\string[]
 		 */
-		public function getRules($action = null)
+		public function getRules($action, $id = null)
 		{
 			// variables
 			$method = 'rules_' . $action;
@@ -311,6 +304,7 @@ class CrudMetaService
 			{
 				if(count($rules))
 				{
+					/** @var \Illuminate\Validation\Validator $validator */
 					$validator = Validator::make([], $rules);
 					foreach($extra as $key => $value)
 					{
@@ -319,6 +313,15 @@ class CrudMetaService
 					return $validator->getRules();
 				}
 				return $extra;
+			}
+
+			// update uniques
+			if($action == 'update' && $id !== null)
+			{
+				foreach($rules as $key => $value)
+				{
+					$rules[$key] = preg_replace('/unique:\w+,\w+/', "\$0,$id", $value);
+				}
 			}
 
 			// return base

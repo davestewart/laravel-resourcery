@@ -4,11 +4,12 @@ use Illuminate\Translation\Translator;
 use Illuminate\Validation\Validator;
 
 /**
- * Validation class with custom messages
+ * Custom Resourcery Validation class
  *
- * Also fixes a bug where array messages for size attributes don't return the correct element
+ * - Loads custom field-centric validation messages
+ * - Fixes getInlineMessage() bug which doesn't return the sub-element for array messages
  */
-class CrudValidator extends Validator
+class FieldValidator extends Validator
 {
 	public function __construct(Translator $translator, array $data, array $rules)
 	{

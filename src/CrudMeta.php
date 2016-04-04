@@ -1,8 +1,6 @@
 <?php namespace davestewart\resourcery;
 
-use davestewart\resourcery\classes\CrudValidator;
 use davestewart\resourcery\errors\InvalidPropertyException;
-use Validator;
 
 /**
  * Class CrudMeta
@@ -347,15 +345,6 @@ class CrudMeta
 		public function __set($name, $value)
 		{
 			$this->set($name, $value);
-		}
-
-
-	// -----------------------------------------------------------------------------------------------------------------
-	// METHODS
-
-		public function validate($input, $rules = null, $action = null)
-		{
-			return new CrudValidator($input, $rules);
 		}
 
 

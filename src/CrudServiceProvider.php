@@ -2,7 +2,11 @@
 
 namespace davestewart\resourcery
 {
+
+	use davestewart\resourcery\classes\validation\Factory;
+	use davestewart\resourcery\classes\validation\FieldValidator;
 	use Illuminate\Support\ServiceProvider;
+	//use Validator;
 
 	/**
 	 * Class CrudServiceProvider
@@ -23,13 +27,15 @@ namespace davestewart\resourcery
 			// services
 			$this->app->bind('CrudService',     'davestewart\resourcery\services\CrudService');
 			$this->app->bind('CrudMetaService', 'davestewart\resourcery\services\CrudMetaService');
-			$this->app->bind('CrudLangService', 'davestewart\resourcery\services\CrudLangService');
+			$this->app->bind('CrudLangService', 'davestewart\resourcery\services\LangService');
 
 			// objects
 			$this->app->bind('CrudMeta',        'davestewart\resourcery\CrudMeta');
 			$this->app->bind('CrudField',       'davestewart\resourcery\CrudField');
 			$this->app->bind('CrudRepo',        'davestewart\resourcery\repos\EloquentRepo');
 			$this->app->bind('CrudControl',     'davestewart\resourcery\controls\FormControl');
+
+			$this->app->singleton(Factory::class);
 		}
 
 		/**
@@ -39,6 +45,18 @@ namespace davestewart\resourcery
 		 */
 		public function boot()
 		{
+			/*
+			// validation
+			Validator::resolver(function($translator, $data, $rules, $messages)
+			{
+				if(isset($data['_resourcery']))
+				{
+					return new CrudValidator($translator, $data, $rules, $messages);
+				}
+				return new \Illuminate\Validation\Validator($translator, $data, $rules, $messages);
+			});
+			*/
+
 			// variables
 			$resources = realpath(__DIR__ . '/../') . '/resources/';
 

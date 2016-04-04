@@ -91,10 +91,16 @@ class CrudService
 		/**
 		 * Manages messages and translations
 		 *
-		 * @var CrudLangService
+		 * @var LangService
 		 */
 		protected $lang;
 
+		/**
+		 * Validation service that validates page and field messages
+		 *
+		 * @var ValidationService $validator
+		 */
+		protected $validator;
 
 		// data
 
@@ -148,6 +154,7 @@ class CrudService
 		protected $success;
 
 
+
 	// -----------------------------------------------------------------------------------------------------------------
 	// INSTANTIATION
 
@@ -170,9 +177,10 @@ class CrudService
 		public function initialize(CrudMeta $meta, $route = null)
 		{
 			// services
-			$this->repo     = \App::make('CrudRepo')->initialize($meta->class);
-			$this->lang     = \App::make('CrudLangService')->initialize($meta);
-			$this->meta     = \App::make('CrudMetaService')->initialize($meta, $this->repo->getFields());
+			$this->repo         = \App::make('CrudRepo')->initialize($meta->class);
+			$this->lang         = \App::make('CrudLangService')->initialize($meta);
+			$this->meta         = \App::make('CrudMetaService')->initialize($meta, $this->repo->getFields());
+			$this->validator    = \App::make(ValidationService::class);
 
 			// route
 			if( ! $route )
@@ -350,7 +358,7 @@ class CrudService
 			}
 			else
 			{
-				$this->validate($input, $action);
+				$this->validate($input, $action, null, $id);
 			}
 
 			//pd($action, $input, $this->errors, $this->meta->rules);
@@ -385,35 +393,38 @@ class CrudService
 		 * @param   array      $input
 		 * @param null         $action
 		 * @param   array|null $rules
+		 * @param null         $id
 		 * @return CrudService
 		 */
-		public function validate($input, $action = null, $rules = null)
+		public function validate($input, $action = null, $rules = null, $id = null)
 		{
 			// reset
 			$this->success  = true;
 			$this->errors   = null;
 			$this->input    = $input;
 
-			// append action
-			$input          = ['_action' => $action] + $input;
-
 			// validate
-			$validator      = $rules
-								? Validator::make($input, $rules)
-								: $this->meta->validate($input, $action);
+			if($rules == null)
+			{
+				$rules      = $this->meta->getRules($action, $id);
+			}
+			$state          = $this->validator->validate($input, $rules);
 
-			//pr($this->action, $input);
+			//pd($rules);
 
 			// actions
-			if ($validator->fails())
+			if ( ! $state )
 			{
 				// properties
 				$this->setStatus(false, $this->lang->status('invalid'));
-				$this->errors	= $validator->errors();
+
+				// errors
+				$this->errors	= $this->validator->page->errors();
+				Session::flash('crud.errors', $this->validator->field->errors());
 
 				// build response
 				$this->response = Redirect::back()
-					->withErrors($validator)
+					->withErrors($this->validator->page->errors())
 					->withInput($this->getInput());
 			}
 
@@ -614,18 +625,6 @@ class CrudService
 			// payload
 			$payload        = [] + $values;
 
-			// add individual fields to payload
-			if($this->action != 'index')
-			{
-				foreach($fields as $name => $field)
-				{
-					if( ! isset($payload[$name]) )
-					{
-						$payload[$name] = $field;
-					}
-				}
-			}
-
 			// add zipped values
 			$payload        += compact('values', 'fields', 'data');
 
@@ -656,11 +655,7 @@ class CrudService
 		 */
 		public function getErrors($key = 'default')
 		{
-			/** @var ViewErrorBag $errors */
-			$errors = Session::get('errors');
-			return $errors
-				? $errors->getBag($key)
-				: null;
+			return Session::get('crud.errors');
 		}
 
 		/**
