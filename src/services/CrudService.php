@@ -1,14 +1,11 @@
 <?php namespace davestewart\resourcery\services;
 
-use davestewart\resourcery\CrudMeta;
-use davestewart\resourcery\repos\CrudRepo;
+use davestewart\resourcery\classes\data\CrudMeta;
+use davestewart\resourcery\classes\repos\CrudRepo;
 use Flash;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\ViewErrorBag;
 use Input;
-use Validator;
 use Redirect;
 use Request;
 use Response;
@@ -23,7 +20,7 @@ use View;
  *
  * - user input
  * - database calls via CrudRepo
- * - field generation via CrudMetaService
+ * - field generation via MetaService
  * - views and responses
  *
  * Magic response properties:
@@ -76,7 +73,7 @@ class CrudService
 		/**
 		 * The meta object that provides all info to this CrudService
 		 *
-		 * @var CrudMetaService
+		 * @var MetaService
 		 */
 		protected $meta;
 
@@ -179,7 +176,7 @@ class CrudService
 			// services
 			$this->repo         = \App::make('CrudRepo')->initialize($meta->class);
 			$this->lang         = \App::make('CrudLangService')->initialize($meta);
-			$this->meta         = \App::make('CrudMetaService')->initialize($meta, $this->repo->getFields());
+			$this->meta         = \App::make('MetaService')->initialize($meta, $this->repo->getFields());
 			$this->validator    = \App::make(ValidationService::class);
 
 			// route

@@ -1,6 +1,7 @@
-<?php namespace davestewart\resourcery\controls;
+<?php namespace davestewart\resourcery\classes\forms;
 
-use davestewart\resourcery\CrudField;
+use davestewart\resourcery\classes\forms\CrudControl;
+use davestewart\resourcery\classes\forms\CrudField;
 use Form;
 
 class FormControl extends CrudControl

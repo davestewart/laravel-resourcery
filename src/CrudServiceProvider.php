@@ -26,14 +26,14 @@ namespace davestewart\resourcery
 		{
 			// services
 			$this->app->bind('CrudService',     'davestewart\resourcery\services\CrudService');
-			$this->app->bind('CrudMetaService', 'davestewart\resourcery\services\CrudMetaService');
+			$this->app->bind('MetaService',     'davestewart\resourcery\services\MetaService');
 			$this->app->bind('CrudLangService', 'davestewart\resourcery\services\LangService');
 
 			// objects
-			$this->app->bind('CrudMeta',        'davestewart\resourcery\CrudMeta');
-			$this->app->bind('CrudField',       'davestewart\resourcery\CrudField');
-			$this->app->bind('CrudRepo',        'davestewart\resourcery\repos\EloquentRepo');
-			$this->app->bind('CrudControl',     'davestewart\resourcery\controls\FormControl');
+			$this->app->bind('CrudMeta',        'davestewart\resourcery\classes\data\CrudMeta');
+			$this->app->bind('CrudRepo',        'davestewart\resourcery\classes\repos\EloquentRepo');
+			$this->app->bind('CrudField',       'davestewart\resourcery\classes\forms\CrudField');
+			$this->app->bind('CrudControl',     'davestewart\resourcery\classes\forms\FormControl');
 
 			$this->app->singleton(Factory::class);
 		}
@@ -78,7 +78,7 @@ namespace davestewart\resourcery
 namespace
 {
 
-	use davestewart\resourcery\CrudField;
+	use davestewart\resourcery\classes\forms\CrudField;
 
 	if( ! function_exists('control') )
 	{

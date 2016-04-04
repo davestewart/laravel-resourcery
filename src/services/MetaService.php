@@ -1,8 +1,8 @@
 <?php namespace davestewart\resourcery\services;
 
-use davestewart\resourcery\CrudField;
-use davestewart\resourcery\CrudMeta;
-use davestewart\resourcery\errors\InvalidPropertyException;
+use davestewart\resourcery\classes\forms\CrudField;
+use davestewart\resourcery\classes\data\CrudMeta;
+use davestewart\resourcery\classes\errors\InvalidPropertyException;
 use ArrayObject;
 use Illuminate\Support\MessageBag;
 use Input;
@@ -15,7 +15,7 @@ use Validator;
  *
  * @package davestewart\resourcery\services
  */
-class CrudMetaService
+class MetaService
 {
 
 	// ------------------------------------------------------------------------------------------------

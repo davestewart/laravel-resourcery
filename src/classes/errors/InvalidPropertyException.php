@@ -1,6 +1,4 @@
-<?php
-
-namespace davestewart\resourcery\errors;
+<?php namespace davestewart\resourcery\classes\errors;
 
 
 class InvalidPropertyException extends \Exception

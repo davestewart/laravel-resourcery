@@ -3,7 +3,7 @@
 namespace davestewart\resourcery\services;
 
 
-use davestewart\resourcery\CrudMeta;
+use davestewart\resourcery\classes\data\CrudMeta;
 use Illuminate\Translation\Translator;
 
 class LangService

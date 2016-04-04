@@ -1,4 +1,4 @@
-<?php namespace davestewart\resourcery\repos;
+<?php namespace davestewart\resourcery\classes\repos;
 
 use Eloquent;
 use Illuminate\Pagination\AbstractPaginator;

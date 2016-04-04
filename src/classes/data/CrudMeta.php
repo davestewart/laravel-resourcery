@@ -1,6 +1,6 @@
-<?php namespace davestewart\resourcery;
+<?php namespace davestewart\resourcery\classes\data;
 
-use davestewart\resourcery\errors\InvalidPropertyException;
+use davestewart\resourcery\classes\errors\InvalidPropertyException;
 
 /**
  * Class CrudMeta

@@ -1,4 +1,4 @@
-<?php namespace davestewart\resourcery\repos;
+<?php namespace davestewart\resourcery\classes\repos;
 
 use Illuminate\Database\Eloquent\Collection;
 
@@ -31,8 +31,8 @@ class CrudRepo
 		/**
 		 * Returns a new, empty model
 		 *
-		 * @param array $data
-		 * @return mixed
+		 * @param   array       $data
+		 * @return  mixed
 		 */
 		public function create($data = [])
 		{
@@ -42,8 +42,8 @@ class CrudRepo
 		/**
 		 * Returns multiple items
 		 *
-		 * @param null $limit
-		 * @return array|Collection|mixed
+		 * @param   int|null    $limit
+		 * @return  array|Collection|mixed
 		 */
 		public function all($limit = null)
 		{
@@ -53,8 +53,8 @@ class CrudRepo
 		/**
 		 * Finds a single row in the database
 		 *
-		 * @param $id
-		 * @return mixed
+		 * @param   int|mixed   $id
+		 * @return  mixed
 		 */
 		public function find($id)
 		{
@@ -64,9 +64,9 @@ class CrudRepo
 		/**
 		 * Updates an existing row in the database
 		 *
-		 * @param $id
-		 * @param $data
-		 * @return mixed
+		 * @param   int|mixed   $id
+		 * @param   array       $data
+		 * @return  mixed
 		 */
 		public function update($id, $data)
 		{
@@ -76,8 +76,8 @@ class CrudRepo
 		/**
 		 * Adds a new row to the database
 		 *
-		 * @param $data
-		 * @return mixed
+		 * @param   array       $data
+		 * @return  mixed
 		 */
 		public function store($data)
 		{
@@ -87,8 +87,8 @@ class CrudRepo
 		/**
 		 * Deletes a row from the database
 		 *
-		 * @param $id
-		 * @return mixed
+		 * @param   int|mixed   $id
+		 * @return  mixed
 		 */
 		public function destroy($id)
 		{

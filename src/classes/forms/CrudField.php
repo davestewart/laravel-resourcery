@@ -1,7 +1,7 @@
-<?php namespace davestewart\resourcery;
+<?php namespace davestewart\resourcery\classes\forms;
 
-use davestewart\resourcery\controls\CrudControl;
-use davestewart\resourcery\errors\InvalidPropertyException;
+use davestewart\resourcery\classes\forms\CrudControl;
+use davestewart\resourcery\classes\errors\InvalidPropertyException;
 
 /**
  * Class FieldMeta
