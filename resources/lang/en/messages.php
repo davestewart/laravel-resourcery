@@ -51,6 +51,10 @@ return [
 		'back'          => 'Back',
 		'select'        => 'Select',
 		'choose'        => 'Choose',
+
+		// prompts
+		'confirm_cancel'=> 'Are you sure you want to cancel?',
+		'confirm_back'  => 'Are you sure you want to want to go back?',
 	],
 
 	// status / flash messages
