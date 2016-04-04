@@ -1,4 +1,4 @@
-@extends('resourcery::layout')
+@extends($views->layout)
 
 @section('head')
     <title>{{ $action }} {{ $singular }}</title>
@@ -11,7 +11,7 @@
     <ul>
         @foreach($fields as $field)
 
-            <li id="attr-{{ $field->name }}">
+            <li id="field-{{ $field->name }}">
                 <strong>{{ $field->label }}: </strong>
                 <span>{{ is_object($field->value) ? print_r($field->value, 1) : $field->value }}</span>
             </li>

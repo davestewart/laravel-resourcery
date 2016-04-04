@@ -95,15 +95,30 @@ class CrudMeta
 		 */
 		protected $views =
 		[
-			'create'            => 'resourcery::create',
-			'index'             => 'resourcery::index',
-			'show'              => 'resourcery::show',
-			'edit'              => 'resourcery::edit',
-			'form'              => 'resourcery::partials.form',
-			'fields'            => 'resourcery::partials.fields',
-			'field'             => 'resourcery::partials.field',
-			'actions'           => 'resourcery::partials.actions',
-			'related'           => 'resourcery::partials.related',
+			// layout
+			'layout'            => 'resourcery::layout',
+			
+			// pages
+			'create'            => 'resourcery::page.create',
+			'index'             => 'resourcery::page.index',
+			'show'              => 'resourcery::page.show',
+			'edit'              => 'resourcery::page.edit',
+			
+			// list
+			'list'              => 'resourcery::list.layout',
+			'actions'           => 'resourcery::list.actions',
+			'related'           => 'resourcery::list.related',
+
+			// form
+			'form'              => 'resourcery::form.layout',
+			'fields'            => 'resourcery::form.fields',
+			'field'             => 'resourcery::form.field',
+			'submit'            => 'resourcery::form.submit',
+		    'errors'            => 'resourcery::form.errors',
+
+		    // components
+		    'pagination'        => 'resourcery::components.pagination',
+		    'status'            => 'resourcery::components.status',
 		];
 
 		/**
