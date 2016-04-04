@@ -4,9 +4,7 @@ namespace davestewart\resourcery
 {
 
 	use davestewart\resourcery\classes\validation\Factory;
-	use davestewart\resourcery\classes\validation\FieldValidator;
 	use Illuminate\Support\ServiceProvider;
-	//use Validator;
 
 	/**
 	 * Class CrudServiceProvider
@@ -15,7 +13,7 @@ namespace davestewart\resourcery
 	 *
 	 * @package davestewart\resourcery
 	 */
-	class CrudServiceProvider extends ServiceProvider {
+	class ResourceryServiceProvider extends ServiceProvider {
 
 		/**
 		 * Register the application services.
@@ -45,18 +43,6 @@ namespace davestewart\resourcery
 		 */
 		public function boot()
 		{
-			/*
-			// validation
-			Validator::resolver(function($translator, $data, $rules, $messages)
-			{
-				if(isset($data['_resourcery']))
-				{
-					return new CrudValidator($translator, $data, $rules, $messages);
-				}
-				return new \Illuminate\Validation\Validator($translator, $data, $rules, $messages);
-			});
-			*/
-
 			// variables
 			$resources = realpath(__DIR__ . '/../') . '/resources/';
 
