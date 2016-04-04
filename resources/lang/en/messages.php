@@ -25,11 +25,11 @@ return [
 		'create'        => 'Create new :singular',
 		'update'        => 'Edit :singular',
 		'search'        => 'Search :plural',
-		'results'       => ':plural',
+		'results'       => 'Search results',
 		'no_results'    => 'No results',
 	],
 
-	// field labels
+	// additional labels
 	'label' =>
 	[
 		'actions'        => 'Actions',
@@ -51,14 +51,18 @@ return [
 		'back'          => 'Back',
 		'select'        => 'Select',
 		'choose'        => 'Choose',
-
-		// prompts
-		'confirm_cancel'=> 'Are you sure you want to cancel?',
-		'confirm_back'  => 'Are you sure you want to want to go back?',
 	],
+    
+	// confirmation prompts
+    'confirm' =>
+    [
+		'delete'        => 'Are you sure you want to delete this :singular?',
+		'cancel'        => 'Are you sure you want to cancel?',
+		'back'          => 'Are you sure you want to want to go back?',
+    ],
 
 	// status / flash messages
-	"status" =>
+	'status' =>
 	[
 		'created'       => 'Successfully created :singular',
 		'updated'       => 'Successfully updated :singular',

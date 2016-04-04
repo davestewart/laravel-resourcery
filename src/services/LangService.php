@@ -68,6 +68,11 @@ class LangService
 			return $this->message('prompt', $key);
 		}
 
+		public function confirm($key)
+		{
+			return $this->message('confirm', $key);
+		}
+
 		public function label($model, $field)
 		{
 			// check the global array first
