@@ -1,7 +1,7 @@
 <?php namespace davestewart\resourcery\services;
 
-use davestewart\resourcery\classes\data\CrudMeta;
-use davestewart\resourcery\classes\repos\CrudRepo;
+use davestewart\resourcery\classes\data\ResourceMeta;
+use davestewart\resourcery\classes\repos\AbstractRepo;
 use Flash;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +19,7 @@ use View;
  * Responsible for marshalling:
  *
  * - user input
- * - database calls via CrudRepo
+ * - database calls via EloquentRepo
  * - field generation via MetaService
  * - views and responses
  *
@@ -78,9 +78,9 @@ class CrudService
 		protected $meta;
 
 		/**
-		 * The CrudRepo implementation that interacts with the database
+		 * The AbstractRepo implementation that interacts with the database
 		 *
-		 * @var CrudRepo
+		 * @var AbstractRepo
 		 */
 		protected $repo;
 
@@ -167,11 +167,11 @@ class CrudService
 		/**
 		 * Initialize the service with meta pertaining to the resource
 		 *
-		 * @param   CrudMeta        $meta       A CrudMeta subclass instance
+		 * @param   ResourceMeta    $meta       A ResourceMeta subclass instance
 		 * @param   string|null     $route      Optional route; defaults to active route
 		 * @return  CrudService
 	     */
-		public function initialize(CrudMeta $meta, $route = null)
+		public function initialize(ResourceMeta $meta, $route = null)
 		{
 			// services
 			$this->repo         = \App::make('CrudRepo')->initialize($meta->class);
@@ -222,7 +222,7 @@ class CrudService
 			if( ! is_object($data) )
 			{
 				// variables
-				$defaults   = \App::make('CrudMeta')->clauses;
+				$defaults   = \App::make(ResourceMeta::class)->clauses;
 				$clauses    = array_merge($defaults, $this->meta->getMeta()->clauses);
 
 				/** @var string $orderBy */
@@ -462,7 +462,7 @@ class CrudService
 		/**
 		 * Explicitly sets the view path
 		 *
-		 * Override the default view for the action, as set in the CrudMeta instance
+		 * Override the default view for the action, as set in the ResourceMeta instance
 		 *
 		 * @param   string      $path
 		 * @return  self

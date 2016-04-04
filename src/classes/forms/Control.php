@@ -1,19 +1,19 @@
 <?php namespace davestewart\resourcery\classes\forms;
 
-use davestewart\resourcery\classes\forms\CrudField;
-use davestewart\resourcery\classes\errors\InvalidPropertyException;
+use davestewart\resourcery\classes\forms\Field;
+use davestewart\resourcery\classes\exceptions\InvalidPropertyException;
 use Form;
 use Illuminate\Support\MessageBag;
 use Input;
 use Session;
 
-class CrudControl
+class Control
 {
 
 	// ------------------------------------------------------------------------------------------------
 	// properties
 
-		/** @var CrudField|mixed  */
+		/** @var Field|mixed  */
 		protected $field;
 
 		/** @var array  */
@@ -68,10 +68,10 @@ class CrudControl
 			return $control;
 		}
 
-		public function __construct(CrudField $field = null)
+		public function __construct(Field $field = null)
 		{
 			// properties
-			$this->field        = $field ? $field : \App::make('CrudField');
+			$this->field        = $field ? $field : \App::make(Field::class);
 			$this->attributes   = [];
 			$this->classes      = [];
 
@@ -243,13 +243,16 @@ class CrudControl
 			$attributes = $this->getControlAttrs();
 			$classes    = implode(' ', $this->getGroupClasses($field));
 
+			/** @var Builder $builder */
+			$builder    = app(Builder::class);
+
 			// label
-			$label      = $this->make_label($field, ['class' =>'col-sm-2 control-label']);
+			$label      = $builder->label($field, ['class' =>'col-sm-2 control-label']);
 
 			// control
-			$method     = "make_{$field->type}";
-			$method     = method_exists($this, $method) ? $method : 'make_text';
-			$control    = $this->$method($field, $attributes);
+			$method     = $field->type;
+			$method     = method_exists($builder, $method) ? $method : 'text';
+			$control    = $builder->$method($field, $attributes);
 			if($view === true)
 			{
 				return $control;

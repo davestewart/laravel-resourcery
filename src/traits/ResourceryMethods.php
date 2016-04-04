@@ -1,16 +1,16 @@
 <?php namespace davestewart\resourcery\traits;
 
-use davestewart\resourcery\classes\data\CrudMeta;
+use davestewart\resourcery\classes\data\ResourceMeta;
 use davestewart\resourcery\services\CrudService;
 use Eloquent;
 use Illuminate\Http\Response;
 
 /**
- * CrudMethods trait
+ * ResourceryMethods trait
  *
- * Use in resource controller to setup all CRUD functionality
+ * Use in resource controller to setup all Resourcery CRUD functionality
  */
-trait CrudMethods
+trait ResourceryMethods
 {
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -26,19 +26,19 @@ trait CrudMethods
 		/**
 		 * Setup function
 		 *
-		 * @param CrudMeta|string   $meta
-		 * @param bool              $debug
+		 * @param ResourceMeta|string $meta     A ResourceMeta instance, or a FQ model path
+		 * @param bool                $debug    An optional boolean to start the CrudService debugger
 		 */
 		protected function setup($meta, $debug = false)
 		{
 			// parameters
 			if(is_string($meta))
 			{
-				$meta = new CrudMeta($meta);
+				$meta = new ResourceMeta($meta);
 			}
 
 			// setup
-			$this->crud = \App::make('CrudService')->initialize($meta);
+			$this->crud = \App::make(CrudService::class)->initialize($meta);
 
 			// debugging
 			if($debug)

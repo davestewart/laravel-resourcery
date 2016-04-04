@@ -1,57 +1,57 @@
 <?php namespace davestewart\resourcery\classes\forms;
 
-use davestewart\resourcery\classes\forms\CrudControl;
-use davestewart\resourcery\classes\forms\CrudField;
+use davestewart\resourcery\classes\forms\Control;
+use davestewart\resourcery\classes\forms\Field;
 use Form;
 
-class FormControl extends CrudControl
+class Builder extends Control
 {
 
-	protected function make_label(CrudField $field, array $attrs = [])
+	public function label(Field $field, array $attrs = [])
 	{
 		return Form::label($field->id, $field->label, $attrs);
 	}
 
-	protected function make_info(CrudField $field, array $attrs = [])
+	public function info(Field $field, array $attrs = [])
 	{
 		return Form::text($field->name, $field->value, array_merge($attrs, ['readonly' => 'readonly']));
 	}
 
-	protected function make_text(CrudField $field, array $attrs = [])
+	public function text(Field $field, array $attrs = [])
 	{
 		return Form::input($field->type, $field->name, $field->value, $attrs);
 	}
 
-	protected function make_textarea(CrudField $field, array $attrs = [])
+	public function textarea(Field $field, array $attrs = [])
 	{
 		return Form::textarea($field->name, $field->value, $attrs);
 	}
 
-	protected function make_select(CrudField $field, array $attrs = [])
+	public function select(Field $field, array $attrs = [])
 	{
 		return Form::select($field->name, $field->options, $field->value, $attrs);
 	}
 
-	protected function make_radios(CrudField $field, array $attrs = [])
+	public function radios(Field $field, array $attrs = [])
 	{
-		return $this->make_control_group($field, $attrs);
+		return $this->group($field, $attrs);
 	}
 
-	protected function make_checkboxes(CrudField $field, array $attrs = [])
+	public function checkboxes(Field $field, array $attrs = [])
 	{
 		if( ! is_array($field->value) )
 		{
-			throw new \Exception('make_checkboxes() expects the passed field->value to be an array');
+			throw new \Exception('checkboxes() expects the passed field->value to be an array');
 		}
-		return $this->make_control_group($field, $attrs);
+		return $this->group($field, $attrs);
 	}
 
-	protected function make_checkbox(CrudField $field, array $attrs = [])
+	public function checkbox(Field $field, array $attrs = [])
 	{
 		Form::checkbox($field->name, $field->value, !! $field->value);
 	}
 
-	protected function make_control_group(CrudField $field, array $attrs = [])
+	public function group(Field $field, array $attrs = [])
 	{
 		// variables
 		$index  = 0;

@@ -1,9 +1,11 @@
 <?php namespace davestewart\resourcery\classes\data;
 
-use davestewart\resourcery\classes\errors\InvalidPropertyException;
+use davestewart\resourcery\classes\exceptions\InvalidPropertyException;
 
 /**
- * Class CrudMeta
+ * Class ResourceMeta
+ * 
+ * Defines
  *
  * @property string 	$class		    The namespaced class of the Model
  * @property string[] 	$views		    Property
@@ -19,7 +21,7 @@ use davestewart\resourcery\classes\errors\InvalidPropertyException;
  * @property string[]   $hidden         Property
  *
  */
-class CrudMeta
+class ResourceMeta
 {
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -285,11 +287,11 @@ class CrudMeta
 	// ACCESSORS
 
 		/**
-		 * Gets a property on the CrudMeta instance
+		 * Gets a property on the ResourceMeta instance
 		 *
-		 * @param $name
-		 * @return mixed|null
-		 * @throws InvalidPropertyException
+		 * @param   string      $name
+		 * @return  mixed|null
+		 * @throws  InvalidPropertyException
 		 */
 		public function get($name)
 		{
@@ -311,12 +313,12 @@ class CrudMeta
 		}
 
 		/**
-		 * Sets or merges values into an array property on the CrudMeta instance
+		 * Sets or merges values into an array property on the ResourceMeta instance
 		 *
-		 * @param $name
-		 * @param $value
-		 * @return $this
-		 * @throws InvalidPropertyException
+		 * @param   string      $name
+		 * @param   mixed       $value
+		 * @return  self
+		 * @throws  InvalidPropertyException
 		 */
 		public function set($name, $value)
 		{

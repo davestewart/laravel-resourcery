@@ -10,12 +10,13 @@
             <h1>All {{ $plural }}</h1>
         </header>
 
-        <!-- errors -->
+        <!-- errors
+        @if( Session::has('message') )
             <div class="alert alert-{{ Session::get('status') }}">
                This is a status message {!! Session::get('message') !!}
             </div>
-        @if( Session::has('message') )
         @endif
+        -->
 
         <!-- controls -->
         <div class="form-group crud-controls">

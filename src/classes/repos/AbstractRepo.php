@@ -3,11 +3,18 @@
 use Illuminate\Database\Eloquent\Collection;
 
 /**
- * Class CrudRepo
+ * AbstractRepo
  *
- * @package davestewart\resourcery\repos
+ * Defines a set of base methods for:
+ *
+ *  - find, all
+ *  - create, read, update, delete
+ *  - pagination
+ *  - listing fields
+ *  - filtering, ordering, sorting
+ *  - eager loading
  */
-class CrudRepo
+abstract class AbstractRepo
 {
 
 	// ------------------------------------------------------------------------------------------------
@@ -104,7 +111,7 @@ class CrudRepo
 		 *
 		 * @param   string      $column
 		 * @param   string      $direction
-		 * @return  CrudRepo
+		 * @return  AbstractRepo
 		 */
 		public function orderBy($column, $direction = 'asc')
 		{
@@ -115,7 +122,7 @@ class CrudRepo
 		 * Adds filters to the query
 		 *
 		 * @param   array       $params
-		 * @return  CrudRepo
+		 * @return  AbstractRepo
 		 */
 		public function filter(array $params)
 		{

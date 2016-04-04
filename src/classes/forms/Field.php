@@ -1,25 +1,25 @@
 <?php namespace davestewart\resourcery\classes\forms;
 
-use davestewart\resourcery\classes\forms\CrudControl;
-use davestewart\resourcery\classes\errors\InvalidPropertyException;
+use davestewart\resourcery\classes\forms\Control;
+use davestewart\resourcery\classes\exceptions\InvalidPropertyException;
 
 /**
- * Class FieldMeta
+ * Class Field
  *
- * @property    string          $id
- * @property    string          $name
- * @property    string          $label
- * @property    string          $value
- * @property    string          $old
- * @property    string          $type
- * @property    string[]        $options
- * @property    string[]        $rules
- * @property    string          $error
- * @property    string          $view
- * @property    object          $model
- * @property    CrudControl     $control
+ * @property    string   $id
+ * @property    string   $name
+ * @property    string   $label
+ * @property    string   $value
+ * @property    string   $old
+ * @property    string   $type
+ * @property    string[] $options
+ * @property    string[] $rules
+ * @property    string   $error
+ * @property    string   $view
+ * @property    object   $model
+ * @property    Control  $control
  */
-class CrudField
+class Field
 {
 
 	// ------------------------------------------------------------------------------------------------
@@ -75,7 +75,7 @@ class CrudField
 			}
 			else if($name == 'control')
 			{
-				return \App::make('CrudControl', [$this]);
+				return \App::make(Control::class, [$this]);
 			}
 			throw new InvalidPropertyException($name, __CLASS__);
 

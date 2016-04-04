@@ -3,7 +3,7 @@
 namespace davestewart\resourcery\services;
 
 
-use davestewart\resourcery\classes\data\CrudMeta;
+use davestewart\resourcery\classes\data\ResourceMeta;
 use Illuminate\Translation\Translator;
 
 class LangService
@@ -21,7 +21,7 @@ class LangService
 	// ------------------------------------------------------------------------------------------------
 	// INSTANTIATION
 
-		public function initialize(CrudMeta $meta)
+		public function initialize(ResourceMeta $meta)
 		{
 			// get initial values
 			$this->values = array_filter($meta->toArray(), function($value){ return is_string($value); });

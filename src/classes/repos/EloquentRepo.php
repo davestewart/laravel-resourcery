@@ -6,10 +6,11 @@ use Illuminate\Support\Collection;
 use Request;
 
 /**
- * Class CrudModel
- * @package davestewart\resourcery
+ * EloquentRepo class
+ * 
+ * Concrete implementation of AbstractRepo
  */
-class EloquentRepo extends CrudRepo
+class EloquentRepo extends AbstractRepo
 {
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -210,7 +211,7 @@ class EloquentRepo extends CrudRepo
 	// UTILITIES
 
 		/**
-		 * Returns the fields for an Eloquent model (used mainly by the CrudMeta constructor)
+		 * Returns the fields for an Eloquent model (used by the ResourceMeta constructor)
 		 *
 		 * @param null $name
 		 * @return \string[] An array of field names for different types of view

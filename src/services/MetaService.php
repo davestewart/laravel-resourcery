@@ -1,19 +1,17 @@
 <?php namespace davestewart\resourcery\services;
 
-use davestewart\resourcery\classes\forms\CrudField;
-use davestewart\resourcery\classes\data\CrudMeta;
-use davestewart\resourcery\classes\errors\InvalidPropertyException;
+use davestewart\resourcery\classes\forms\Field;
+use davestewart\resourcery\classes\data\ResourceMeta;
+use davestewart\resourcery\classes\exceptions\InvalidPropertyException;
 use ArrayObject;
 use Illuminate\Support\MessageBag;
 use Input;
 use Validator;
 
 /**
- * Class CrudMetaService
+ * Class MetaService
  *
- * Responsible for turning Meta information into fields and controls
- *
- * @package davestewart\resourcery\services
+ * Responsible for turning ResourceMeta information into Fields and Controls
  */
 class MetaService
 {
@@ -22,7 +20,7 @@ class MetaService
 	// CACHED
 
 		/**
-		 * @var CrudMeta
+		 * @var ResourceMeta
 		 */
 		protected $meta;
 
@@ -52,11 +50,11 @@ class MetaService
 		/**
 		 * Initialize the Meta object
 		 *
-		 * @param CrudMeta $meta
+		 * @param ResourceMeta $meta
 		 * @param          $fields
 		 * @return $this
 		 */
-		public function initialize(CrudMeta $meta, $fields = [])
+		public function initialize(ResourceMeta $meta, $fields = [])
 		{
 			// meta
 			$this->meta = $meta;
@@ -156,7 +154,7 @@ class MetaService
 		}
 
 		/**
-		 * Gets all form fields for a named view as an array of CrudField instances
+		 * Gets all form fields for a named view as an array of Field instances
 		 *
 		 * @param   string      $action     The resource action
 		 * @param   mixed       $data       The model
@@ -188,19 +186,19 @@ class MetaService
 		}
 
 		/**
-		 * Return a single field as a CrudField instance
+		 * Return a single field as a Field instance
 		 *
 		 * @param   string      $action     The resource action
 		 * @param   string      $name       The name of the field to build
 		 * @param   mixed       $data       The source data, such as a model
 		 * @param   MessageBag  $errors     Any validation errors
-		 * @return  CrudField
+		 * @return  Field
 		 * @throws  \Exception
 		 */
 		public function getField($action, $name, $data, $errors = null)
 		{
-			/** @var CrudField */
-			$field                  = \App::make('CrudField');
+			/** @var Field */
+			$field                  = \App::make(Field::class);
 
 
 			// ------------------------------------------------------------------------------------------------

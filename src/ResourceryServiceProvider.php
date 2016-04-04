@@ -7,11 +7,9 @@ namespace davestewart\resourcery
 	use Illuminate\Support\ServiceProvider;
 
 	/**
-	 * Class CrudServiceProvider
+	 * ResourceryServiceProvider
 	 *
-	 * Provides default functionality for Eloquent models
-	 *
-	 * @package davestewart\resourcery
+	 * Sets up the Resourcery package
 	 */
 	class ResourceryServiceProvider extends ServiceProvider {
 
@@ -30,8 +28,6 @@ namespace davestewart\resourcery
 			// objects
 			$this->app->bind('CrudMeta',        'davestewart\resourcery\classes\data\CrudMeta');
 			$this->app->bind('CrudRepo',        'davestewart\resourcery\classes\repos\EloquentRepo');
-			$this->app->bind('CrudField',       'davestewart\resourcery\classes\forms\CrudField');
-			$this->app->bind('CrudControl',     'davestewart\resourcery\classes\forms\FormControl');
 
 			$this->app->singleton(Factory::class);
 		}
@@ -64,13 +60,14 @@ namespace davestewart\resourcery
 namespace
 {
 
-	use davestewart\resourcery\classes\forms\CrudField;
+	use davestewart\resourcery\classes\forms\Control;
+	use davestewart\resourcery\classes\forms\Field;
 
 	if( ! function_exists('control') )
 	{
-		function control(CrudField $field)
+		function control(Field $field)
 		{
-			return \App::make('CrudControl', [$field]);
+			return \App::make(Control::class, [$field]);
 
 		}
 	}

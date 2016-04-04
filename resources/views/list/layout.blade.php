@@ -4,7 +4,7 @@
 	    <!-- header -->
 	    <thead>
 	        <tr>
-	            @foreach($fields as /** @var davestewart\resourcery\classes\forms\CrudField */ $field)
+	            @foreach($fields as /** @var davestewart\resourcery\classes\forms\Field */ $field)
 	            <td>{{ $field->label }}</td>
 	            @endforeach
 	            <td>Actions</td>
