@@ -1,7 +1,7 @@
 @extends('admin.layout')
 
 
-@section('layout')
+@section('content')
     <div class="container">
 
         <nav class="navbar navbar-inverse">
