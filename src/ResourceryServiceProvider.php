@@ -44,6 +44,7 @@ namespace davestewart\resourcery
 
 			// vendor folders
 			$this->loadViewsFrom($resources . 'views', 'resourcery');
+			$this->mergeConfigFrom($resources . 'config/config.php', 'resourcery');
 			$this->loadTranslationsFrom($resources . 'lang', 'resourcery');
 
 			// publishes
