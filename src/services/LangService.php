@@ -3,7 +3,7 @@
 namespace davestewart\resourcery\services;
 
 
-use davestewart\resourcery\classes\data\ResourceMeta;
+use davestewart\resourcery\classes\meta\ResourceMeta;
 use Illuminate\Translation\Translator;
 
 class LangService

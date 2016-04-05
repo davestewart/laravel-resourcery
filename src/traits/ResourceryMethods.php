@@ -1,6 +1,6 @@
 <?php namespace davestewart\resourcery\traits;
 
-use davestewart\resourcery\classes\data\ResourceMeta;
+use davestewart\resourcery\classes\meta\ResourceMeta;
 use davestewart\resourcery\services\CrudService;
 use Eloquent;
 use Illuminate\Http\Response;

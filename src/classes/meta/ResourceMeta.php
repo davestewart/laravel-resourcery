@@ -1,4 +1,4 @@
-<?php namespace davestewart\resourcery\classes\data;
+<?php namespace davestewart\resourcery\classes\meta;
 
 use davestewart\resourcery\classes\exceptions\InvalidPropertyException;
 
@@ -8,17 +8,20 @@ use davestewart\resourcery\classes\exceptions\InvalidPropertyException;
  * Defines
  *
  * @property string 	$class		    The namespaced class of the Model
- * @property string[] 	$views		    Property
- * @property mixed[]   	index	    	Property
+ * @property string[] 	$related		Property
+ * @property string[] 	$clauses		Property
+ * @property string 	$titleAttr		Property
+ *
  * @property string   	$singular		Property
  * @property string 	$plural		    Property
- * @property string 	$titleAttr		Property
+ *
+ * @property string[] 	$views		    Property
  * @property string[] 	$fields		    Property
- * @property string[] 	$controls		Property
- * @property string[] 	$labels		    Property
- * @property string[] 	$messages		Property
- * @property string[] 	$rules		    Property
  * @property string[]   $hidden         Property
+ *
+ * @property string[] 	$labels		    Property
+ * @property string[] 	$controls		Property
+ * @property string[] 	$rules		    Property
  *
  */
 class ResourceMeta
@@ -43,16 +46,7 @@ class ResourceMeta
 		 *
 		 * @var array
 		 */
-		protected $relations    = [ ];
-
-		/**
-		 * The attribute to use to determine the title of the model
-		 *
-		 * For example, a User model may want to use the name attribute, but a
-		 *
-		 * @var string
-		 */
-		protected $titleAttr    = 'name';
+		protected $related      = [ ];
 
 		/**
 		 * Behaviour for index pages
@@ -65,6 +59,15 @@ class ResourceMeta
 			'orderDir'          => 'desc',
 			'perPage'           => 50,
 		];
+
+		/**
+		 * The attribute to use to determine the title of the model
+		 *
+		 * For example, a User model may want to use the name attribute, but a
+		 *
+		 * @var string
+		 */
+		protected $titleAttr    = 'name';
 
 
 	// -----------------------------------------------------------------------------------------------------------------

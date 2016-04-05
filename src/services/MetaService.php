@@ -1,7 +1,9 @@
 <?php namespace davestewart\resourcery\services;
 
 use davestewart\resourcery\classes\forms\Field;
-use davestewart\resourcery\classes\data\ResourceMeta;
+use davestewart\resourcery\classes\meta\FieldMeta;
+use davestewart\resourcery\classes\meta\ControlMeta;
+use davestewart\resourcery\classes\meta\ResourceMeta;
 use davestewart\resourcery\classes\exceptions\InvalidPropertyException;
 use ArrayObject;
 use Illuminate\Support\MessageBag;
@@ -25,18 +27,25 @@ class MetaService
 		protected $meta;
 
 		/**
+		 * A cached version of all expanded field properties
+		 *
+		 * @var array
+		 */
+		protected $fields;
+
+		/**
 		 * A cached version of all merged / combined controls arrays
 		 *
 		 * @var array
 		 */
-		protected $controls    = null;
+		protected $controls;
 
 		/**
 		 * A cached version of all merged / combined rules arrays
 		 *
 		 * @var array
 		 */
-		protected $rules       = null;
+		protected $rules;
 
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -75,8 +84,6 @@ class MetaService
 				}
 			}
 
-			//pr($this->fields);
-
 			// update hidden fields
 			if(is_array($fields['hidden']))
 			{
@@ -99,13 +106,12 @@ class MetaService
 		/**
 		 * Gets any related tables used in the $fields attribute for the specified action
 		 *
-		 * @param   string  $action     The action to get related tables for
 		 * @return  array               An array of related tables
 		 */
-		public function getRelated($action)
+		public function getRelated()
 		{
-			preg_match_all('/(\w+)\.(?:\w+)/', $this->meta->fields[$action], $matches);
-			return $matches ? $matches[1] : null;
+			$related = $this->meta->related;
+			return count($related) ? $related : null;
 		}
 
 		/**
@@ -154,6 +160,39 @@ class MetaService
 		}
 
 		/**
+		 * Converts the fields list shorthand into a list of FieldMeta instances
+		 *
+		 * @param $action
+		 * @return FieldMeta[]
+		 */
+		public function getFieldsMeta($action)
+		{
+			$fields     = array_get($this->fields, $action);
+			if($fields)
+			{
+				return $fields;
+			}
+
+			// variables
+			$data       = $this->meta->fields[$action];
+			$fields     = [];
+
+			// parse
+			preg_match_all('/\S+/', $data, $matches);
+			foreach ($matches[0] as $match)
+			{
+				$field = new FieldMeta($match);
+				$fields[$field->id] = $field;
+			}
+
+			// cache results
+			array_set($this->fields, $action, $fields);
+
+			// return
+			return $fields;
+		}
+
+		/**
 		 * Gets all form fields for a named view as an array of Field instances
 		 *
 		 * @param   string      $action     The resource action
@@ -164,21 +203,13 @@ class MetaService
 		public function getFields($action, $data = null, $errors = null)
 		{
 			// get fields
-			$names      = $this->meta->fields[$action];
+			$fieldsMeta = $this->getFieldsMeta($action);
 			$fields     = new FieldList();
 
-			// grab names
-			if(is_string($names))
+			// loop over $meta and build meta
+			foreach($fieldsMeta as $id => $meta)
 			{
-				preg_match_all('/\S+/', $names, $matches);
-				$names = $matches[0];
-			}
-
-			// loop over fields and build meta
-			foreach( (array) $names as $index => $name)
-			{
-				$field = $this->getField($action, $name, $data, $errors);
-				$fields[$field->id] = $field;
+				$fields[$id] = $this->getField($action, $meta, $data, $errors);
 			}
 
 			// return
@@ -188,39 +219,38 @@ class MetaService
 		/**
 		 * Return a single field as a Field instance
 		 *
-		 * @param   string      $action     The resource action
-		 * @param   string      $name       The name of the field to build
-		 * @param   mixed       $data       The source data, such as a model
-		 * @param   MessageBag  $errors     Any validation errors
+		 * @param   string              $action     The resource action
+		 * @param   FieldMeta|string    $ref        A FieldMeta instance, field name, or shorthand field reference of the Field to build
+		 * @param   mixed               $data       The source data, such as a model
+		 * @param   MessageBag          $errors     Any validation errors
 		 * @return  Field
 		 * @throws  \Exception
 		 */
-		public function getField($action, $name, $data, $errors = null)
+		public function getField($action, $ref, $data, $errors = null)
 		{
-			/** @var Field */
-			$field                  = \App::make(Field::class);
+				/** @var Field */
+				$field      = \App::make(Field::class);
+				$meta       = $ref instanceof FieldMeta 
+								? $ref 
+								: new FieldMeta($ref);
 
 
 			// ------------------------------------------------------------------------------------------------
 			// basic information
 
-				// initial check to see if the field has a callback, i.e. "posts:getPostCount"
-				if(strstr($name, ':') !== false)
-				{
-					$parts      = explode(':', $name);
-					$name       = $parts[0];
-					$callback   = $parts[1];
-				}
-
 				// field name & label
-				$field->id              = preg_replace('/^_+|_+$/', '', preg_replace('/\W+/', '_', $name));
-				$field->name            = $name;
-				$field->label           = $this->getLabel($name);
+				$field->id              = $meta->id;
+				$field->name            = $meta->name;
+				$field->label           = $this->getLabel($meta->name);
 
 				// if we have a callback, call it
-				if(isset($callback) && method_exists($this->meta, $callback))
+				if($meta->callback && method_exists($this->meta, $meta->callback))
 				{
-					$field->value   = function($model) use ($callback) { return $this->meta->$callback($model); };
+					if( ! method_exists($this->meta, $meta->callback) )
+					{
+						throw new \Exception("Callback '{$meta->callback}' does not exist on " . get_class($this->meta));
+					}
+					$field->value   = function($model) use ($meta) { return $this->meta->{$meta->callback}($model); };
 				}
 
 				// if we're on the index route, there's no point assigning values as they will be resolved per-model in the for loop
@@ -232,8 +262,8 @@ class MetaService
 				// otherwise, attempt to resolve a value, unless hidden
 				else
 				{
-					$field->value   = ! in_array($name, $this->meta->hidden)
-										? $this->getProperty($data, $name)
+					$field->value   = ! in_array($meta->name, $this->meta->hidden)
+										? $this->getProperty($data, $meta->name)
 										: null;
 				}
 
@@ -244,7 +274,7 @@ class MetaService
 				if($action === 'create' || $action === 'edit')
 				{
 					// control
-					$control                = $this->getControlProps($name, $action);
+					$control                = $this->getControlMeta($meta->name, $action);
 					$field->type            = $control->type;
 					if($control->callback)
 					{
@@ -256,18 +286,18 @@ class MetaService
 					}
 
 					// errors
-					$errorName = str_replace(']', '', str_replace('[', '.', $name));
+					$errorName = str_replace(']', '', str_replace('[', '.', $meta->name));
 					if($errors && $errors->has($errorName))
 					{
 						$field->error       = $errors->first($errorName);
 					}
 
 					// old values
-					$old                    = Input::old($name);
+					$old                    = Input::old($meta->name);
 					$field->old             = $old ? $old : $field->value;
 
 					// attributes
-					$field->rules           = $this->getRule($name, $action);
+					$field->rules           = $this->getRule($meta->name, $action);
 					$field->view            = $this->meta->views['field'];
 				}
 
@@ -346,6 +376,8 @@ class MetaService
 		/**
 		 * Gets the list of controls for a certain action
 		 *
+		 * Combines $controls, $controls_create and $controls_edit properties to build the array
+		 *
 		 * @param null $action
 		 * @return mixed|null|\string[]
 		 */
@@ -381,40 +413,19 @@ class MetaService
 		/**
 		 * Gets control properties for an action/field
 		 *
+		 * Parses "create:type edit:type options:callback" structure
+		 *
 		 * @param   string  $name   The name of the control to find
 		 * @param   string  $action The current action
 		 * @return  object
 		 */
-		protected function getControlProps($name, $action)
+		protected function getControlMeta($name, $action)
 		{
-			// variables
 			$controls   = $this->getControls($action);
-			$data       = isset($controls[$name]) ? $controls[$name] : 'text';
-
-			// single control type
-			if(strstr($data, ':') === FALSE)
-			{
-				return new ControlProps($data);
-			}
-
-			// compound control type
-			else
-			{
-				// grab controls
-				preg_match_all('/(\w+):(\w+)/', $data, $matches);
-				$controls = array_combine($matches[1], $matches[2]);
-
-				// single entry
-				if(count($controls) === 1)
-				{
-					return new ControlProps($matches[1][0], $matches[2][0]);
-				}
-				else
-				{
-					$options = isset($controls['options']) ? $controls['options'] : null;
-					return new ControlProps($controls[$action], $options);
-				}
-			}
+			$data       = isset($controls[$name]) 
+							? $controls[$name] 
+							: 'text';
+			return ControlMeta::create($data, $action);
 		}
 
 		/**
@@ -459,26 +470,18 @@ class MetaService
 
 }
 
-class FieldList extends ArrayObject
-{
-	public function __get($name)
+// ------------------------------------------------------------------------------------------------
+// supporting classes
+
+	class FieldList extends ArrayObject
 	{
-		if(array_key_exists($name, $this))
+		public function __get($name)
 		{
-			return $this[$name];
+			if(array_key_exists($name, $this))
+			{
+				return $this[$name];
+			}
+			throw new InvalidPropertyException($name, get_called_class());
 		}
-		throw new InvalidPropertyException($name, get_called_class());
 	}
-}
 
-class ControlProps
-{
-	public $type;
-	public $callback;
-
-	public function __construct($type = null, $callback = null)
-	{
-		$this->type     = $type;
-		$this->callback = $callback;
-	}
-}

@@ -1,6 +1,6 @@
 <?php namespace davestewart\resourcery\services;
 
-use davestewart\resourcery\classes\data\ResourceMeta;
+use davestewart\resourcery\classes\meta\ResourceMeta;
 use davestewart\resourcery\classes\repos\AbstractRepo;
 use Flash;
 use Illuminate\Http\RedirectResponse;
@@ -716,11 +716,13 @@ class CrudService
 		/**
 		 * Checks that all related models have been loaded
 		 */
-		protected function loadRelated()
+		public function loadRelated()
 		{
-			$relations = $this->meta->getRelated($this->action);
+			$fields     = $this->meta->getFieldsMeta($this->action);
+			$relations  = $this->meta->getRelated() ?: $this->repo->getRelated($fields);;
 			if($relations)
 			{
+				pr('relations', $relations);
 				$this->repo->loadRelated($this->data, $relations);
 			}
 			$this->loaded = true;
