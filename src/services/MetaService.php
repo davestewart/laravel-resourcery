@@ -126,25 +126,6 @@ class MetaService
 		}
 
 		/**
-		 * Returns the title for the entity
-		 *
-		 * The method searches first for a `title` property on the model, then looks for a same-named property
-		 * as the `titleAttr` property on the Meta
-		 *
-		 * @param   object  $model      The model to use to determine the title
-		 * @return  string              The view path
-		 */
-		public function getTitle($model)
-		{
-			$attr = $this->meta->titleAttr ?: 'title';
-			return $model
-				? property_exists($model, $attr)
-					? $model->$attr
-					: null
-				: null;
-		}
-
-		/**
 		 * Returns the label for a field
 		 *
 		 * The method first checks the `labels` array, then defaults to the ucwords version of the field name
@@ -154,6 +135,7 @@ class MetaService
 		 */
 		public function getLabel($name)
 		{
+			// need to involve LangService here
 			return array_key_exists($name, $this->meta->labels)
 				? $this->meta->labels[$name]
 				: trim(ucwords(preg_replace('/[_\W]+/', ' ', $name)));

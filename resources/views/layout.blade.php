@@ -6,8 +6,8 @@
 
         <nav class="navbar navbar-inverse">
             <ul class="nav navbar-nav">
-                <li><a href="{!! URL::to("$route") !!}">View all {{ $plural }}</a></li>
-                <li><a href="{!! URL::to("$route/create") !!}">Create {{ $singular }}</a>
+                <li><a href="{!! URL::to("$route") !!}"> {{ $lang->prompt->all }}</a></li>
+                <li><a href="{!! URL::to("$route/create") !!}">{{ $lang->prompt->create }}</a>
             </ul>
         </nav>
 

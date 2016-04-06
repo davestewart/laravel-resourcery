@@ -1,12 +1,12 @@
 @extends($views->layout)
 
 @section('head')
-    <title>{{ $action }} {{ $singular }}</title>
+    <title>{{ $lang->title->show }}</title>
 @endsection
 
 @section('content')
 
-    <h1>{{ $Action }} {{ $singular }}: {{ $title }}</h1>
+    <h1>{{ $lang->title->show }}</h1>
 
     <ul>
         @foreach($fields as $field)

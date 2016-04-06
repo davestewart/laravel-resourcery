@@ -3,26 +3,25 @@
 use davestewart\resourcery\classes\exceptions\InvalidPropertyException;
 
 /**
- * Class ResourceMeta
+ * ResourceMeta Class
  * 
- * Defines
+ * Defines properties and behavior (through methods) for a resource
  *
- * @property string 	$class		    The namespaced class of the Model
- * @property string[] 	$related		Property
- * @property string[] 	$clauses		Property
- * @property string 	$titleAttr		Property
+ * @property string     $class          The fully-qualified class of the Model
+ * @property string[]   $related        The names of relationships to eager load on the index page
+ * @property string[]   $clauses        Default behaviour for index pages
  *
- * @property string   	$singular		Property
- * @property string 	$plural		    Property
+ * @property string[]   $naming         Default naming for translation
  *
- * @property string[] 	$views		    Property
- * @property string[] 	$fields		    Property
- * @property string[]   $hidden         Property
+ * @property string[]   $views          Paths to the view files that will render data
+ * @property string[]   $fields         Fields to show for each action
+ * @property string[]   $hidden         Fields to keep secret when repopulating forms
  *
- * @property string[] 	$labels		    Property
- * @property string[] 	$controls		Property
- * @property string[] 	$rules		    Property
+ * @property string[]   $labels         Optional array of labels for fields
+ * @property string[]   $controls       Preferred controls for fields
+ * @property string[]   $rules          Validation rules
  *
+ * @property string     $name           The single name of the Model used to load custom translations, etc
  */
 class ResourceMeta
 {
@@ -31,25 +30,25 @@ class ResourceMeta
 	// DATABASE
 
 		/**
-		 * The namespaced class of the Model
+		 * The fully-qualified class of the Model
 		 *
 		 * @var string
 		 */
 		protected $class        = '\App\Models\Item';
 
 		/**
-		 * The names of any model relationships
+		 * The names of relationships to eager load on the index page
 		 *
-		 * Should be an array of properties / model methods such as:
+		 * Should be an array of table names
 		 *
-		 * - ['user', 'client', 'event']
+		 * - ['users', 'clients', 'posts']
 		 *
 		 * @var array
 		 */
 		protected $related      = [ ];
 
 		/**
-		 * Behaviour for index pages
+		 * Default behaviour for index pages
 		 *
 		 * @var int
 		 */
@@ -60,41 +59,44 @@ class ResourceMeta
 			'perPage'           => 50,
 		];
 
-		/**
-		 * The attribute to use to determine the title of the model
-		 *
-		 * For example, a User model may want to use the name attribute, but a
-		 *
-		 * @var string
-		 */
-		protected $titleAttr    = 'name';
-
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// LANGUAGE
 
 		/**
-		 * The singular name of the model
+		 * Default naming for translation
 		 *
-		 * @var string
-		 */
-		protected $singular     = 'item';
-
-		/**
-		 * The plural name of the model
+		 * Note that the title attribute entry is used by the default getTitle() method on this class, to attempt to
+		 * resolve a human-readable title for the model.
 		 *
-		 * @var string
+		 * This method can be left as-is, or overridden in the subclass
+		 *
+		 * @var array
 		 */
-		protected $plural       = 'items';
+		protected $naming =
+		[
+			'item'              => 'item',
+			'items'             => 'items',
+			'titleAttribute'    => 'id',
+		];
 
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// DATA
 
 		/**
-		 * Paths to the view files that will render your model's data
+		 * Paths to the view files that will render data
 		 *
 		 * Defaults to the package's catch-all templates
+		 *
+		 * These can be overridden per meta, per view, so for example to output a custom "edit" or "show" page,
+		 * just update the keys like so:
+		 *
+		 *  - 'edit'            => 'forms.product.edit',
+		 *  - 'show'            => 'entities.products.software.show',
+		 *
+		 * Everything else will then render as expected, with just these two views being swapped out, but all the
+		 * same data will be passed in
 		 *
 		 * @var string[]
 		 */
@@ -127,7 +129,7 @@ class ResourceMeta
 		];
 
 		/**
-		 * Fields to show for each action:
+		 * Fields to show for each action
 		 *
 		 * Should be an array of space-separated strings (or an array of arrays) of the form $action => $fields:
 		 *
@@ -157,7 +159,7 @@ class ResourceMeta
 		];
 
 		/**
-		 * Fields to keep secret when repopulating the form
+		 * Fields to keep secret when repopulating forms
 		 *
 		 * @var string[]
 		 */
@@ -290,6 +292,20 @@ class ResourceMeta
 	// ACCESSORS
 
 		/**
+		 * Gets a human-readable title for the model
+		 *
+		 * This method is called by the translation engine, when it comes across a :title placeholder
+		 *
+		 * @param $model
+		 * @return mixed
+		 */
+		public function getTitle($model)
+		{
+			$prop = $this->naming['titleAttribute'];
+			return @ $model->$prop;
+		}
+
+		/**
 		 * Gets a property on the ResourceMeta instance
 		 *
 		 * @param   string      $name
@@ -311,6 +327,10 @@ class ResourceMeta
 			else if(property_exists($this, $name))
 			{
 				return $this->$name;
+			}
+			else if($name === 'name')
+			{
+				return $this->naming['item'];
 			}
 			throw new InvalidPropertyException($name, get_called_class());
 		}

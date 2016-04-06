@@ -1,13 +1,13 @@
 @extends($views->layout)
 
 @section('head')
-    <title>All {{ $plural }}</title>
+    <title>{{ $lang->title->index }}</title>
 @stop
 
 @section('content')
 
-    <header>
-            <h1>All {{ $plural }}</h1>
+        <header>
+            <h1>{{ $lang->title->index }}</h1>
         </header>
 
         <!-- errors
@@ -22,7 +22,7 @@
         <div class="form-group crud-controls">
 
             <!-- create new -->
-            <a class="btn btn-small btn-info btn-create" href="{!! URL::to("$route/create") !!}">Create new {{ $singular }}</a>
+            <a class="btn btn-small btn-info btn-create" href="{!! URL::to("$route/create") !!}">{{ $lang->prompt->create }}</a>
 
             <!-- top pagination -->
             @include($views->pagination)

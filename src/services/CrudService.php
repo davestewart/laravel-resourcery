@@ -534,6 +534,22 @@ class CrudService
 	// VIEW DATA
 
 		/**
+		 * Collates all view values, labels, text etc that pertains to this route
+		 *
+		 * @return array
+		 */
+		public function getValues()
+		{
+			$values =
+			[
+				'route'         => $this->route,
+				'action'	    => $this->action,
+				'redirect'      => $this->getRedirect(),
+			];
+			return $values;
+		}
+
+		/**
 		 * Loads and returns all data for the resource
 		 *
 		 * @return \Illuminate\Contracts\Support\Arrayable
@@ -562,71 +578,31 @@ class CrudService
 		}
 
 		/**
-		 * Collates all view values, labels, text etc that pertains to this route
-		 *
-		 * @return array
-		 */
-		public function getValues()
-		{
-			// prepare data
-			$data               = $this->getData();
-			$meta               = (object) $this->meta->getMeta();
-
-			// state
-			$props =
-			[
-				'route'			=> $this->route,
-				'view'			=> $this->action,
-				'redirect'      => $this->getRedirect(),
-			];
-
-			// text
-			$words =
-			[
-				'action'		=> $this->action,
-				'singular'		=> $meta->singular,
-				'plural'		=> $meta->plural,
-				'title'			=> $this->meta->getTitle($data),
-			];
-
-			// add Capitalized Versions of text
-			$text = [];
-			foreach($words as $key => $value)
-			{
-				$text[$key] = $value;
-				$text[ucwords($key)] = ucwords($value);
-			}
-
-			// fields
-			$views =
-			[
-				'views'         => (object) $meta->views,
-			];
-
-			// return
-			return array_merge($props, $text, $views, $this->values);
-		}
-
-		/**
 		 * Collates all view data (values, fields, data)
 		 *
 		 * @return array
 		 */
 		public function getViewData()
 		{
+			// prepare data
+			$meta           = (object) $this->meta->getMeta();
+
 			// base values
 			$values         = $this->getValues();
-			$fields         = $this->getFields();
 			$data           = $this->getData();
+			$fields         = $this->getFields();
+			$views          = (object) $meta->views;
+			$lang           = $this->lang->setModel($data);
 
 			// payload
 			$payload        = [] + $values;
 
 			// add zipped values
-			$payload        += compact('values', 'fields', 'data');
+			$payload        += compact('values', 'data', 'views', 'fields', 'lang');
 
 			// debug
-			//pr($payload);
+			//pr($lang->setModel($data)->get('messages.confirm.delete'));
+			//dd($payload);
 
 			// return
 			return $payload;
@@ -647,10 +623,9 @@ class CrudService
 		/**
 		 * Gets errors from the session
 		 *
-		 * @param string $key
 		 * @return \Illuminate\Contracts\Support\MessageBag|null
 		 */
-		public function getErrors($key = 'default')
+		public function getErrors()
 		{
 			return Session::get('crud.errors');
 		}
@@ -722,7 +697,7 @@ class CrudService
 			$relations  = $this->meta->getRelated() ?: $this->repo->getRelated($fields);;
 			if($relations)
 			{
-				pr('relations', $relations);
+				//pr('relations', $relations);
 				$this->repo->loadRelated($this->data, $relations);
 			}
 			$this->loaded = true;

@@ -1,11 +1,11 @@
 @section('head')
-    <title>{{ $Action }} {{ $Singular }}</title>
+    <title>{{ $lang->title->$action }}</title>
 @endsection
 
 @section('content')
 
     <header>
-        <h1>{{ $Action }} {{ $singular }}: {{ $title }}</h1>
+        <h1>{{ $lang->title->$action }}</h1>
     </header>
 
     <!-- errors -->
