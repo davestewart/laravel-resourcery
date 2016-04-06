@@ -2,19 +2,19 @@
 
 return [
 
-	':default' =>
+	':defaults' =>
 	[
-		'id'        => 'id',
-		'name'      => 'Name',
+		'id'            => 'id',
+		'name'          => 'Name',
 	],
 
-	'item' =>
+	'thing' =>
 	[
-		':singular'     => 'Item',
-		':plural'       => 'Items',
-		'name'          => 'Name',
-		'email'         => 'Email',
-		'age'           => 'Age',
+		':item'         => 'thing',
+		':items'        => 'things',
+		'name'          => 'Thing Name',
+		'email'         => 'Thing Email',
+		'age'           => 'Thing Age',
 	],
 
 ];
