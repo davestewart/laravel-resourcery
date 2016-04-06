@@ -5,5 +5,5 @@
     {!! Form::open(['url' => "$route/$item->id", 'style' => 'display:inline-block', 'id' => "form-$item->id"]) !!}
         {!! Form::hidden('_method', 'DELETE') !!}
         {!! Form::submit($lang->action->Delete, array('class' => 'btn btn-xs btn-warning')) !!}
-    <script>$('#form-{{ $item->id }}').on('submit', function(){ return confirm('{{ $lang->confirm->delete }}'); })</script>
+    <script>$('#form-{{ $item->id }}').on('submit', function(){ return confirm('{!! $lang->confirm->delete !!}'); })</script>
     {!! Form::close() !!}

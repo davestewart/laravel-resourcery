@@ -15,6 +15,7 @@
 	    <tbody>
 
 	        @foreach($data as $item)
+			<?php $lang->setModel($item); ?>
 	        <tr>
 
 	            @foreach($fields as $field)
