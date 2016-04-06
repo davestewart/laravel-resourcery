@@ -143,6 +143,11 @@ abstract class AbstractRepo
 			return [];
 		}
 
+		public function getRelated(array $fields)
+		{
+			return [];
+		}
+
 		/**
 		 * Loads related items on a model
 		 *

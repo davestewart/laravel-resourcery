@@ -1,8 +1,13 @@
 <?php namespace davestewart\resourcery\classes\repos;
 
-use Eloquent;
+use davestewart\resourcery\classes\exceptions\InvalidPropertyException;
+use davestewart\resourcery\classes\exceptions\InvalidRelationException;
+use davestewart\resourcery\classes\meta\FieldMeta;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Collection;
+use Eloquent;
 use Request;
 
 /**
@@ -196,6 +201,7 @@ class EloquentRepo extends AbstractRepo
 		 *
 		 * @param $name
 		 * @return mixed
+		 * @throws InvalidPropertyException
 		 */
 		public function __get($name)
 		{
@@ -203,7 +209,7 @@ class EloquentRepo extends AbstractRepo
 			{
 				return $this->$name;
 			}
-			return null;
+			throw new InvalidPropertyException($name, __CLASS__);
 		}
 
 
@@ -253,13 +259,112 @@ class EloquentRepo extends AbstractRepo
 		}
 
 		/**
+		 * Attempts to determine related models from field list by checking for relationships on linked properties
+		 *
+		 * Note that the job of this algorithm is NOT to test for object properties or model attributes, but simply
+		 * to test whether relations exist and return an array that can be passed to a model's with() method
+		 *
+		 * @param   FieldMeta[]     $fields     An array of FieldMeta instances. The method uses the `path` property to work out existing relations
+		 * @return  array
+		 * @throws  InvalidRelationException
+		 */
+		public function getRelated(array $fields)
+		{
+			// variables
+			$model          = $this->create();
+			$relations      = [];
+
+			// debug
+			//pr('fields', $fields);
+			//pr('source', $model->toArray());
+
+			// loop over fields and extract possible relations
+			foreach ($fields as &$field)
+			{
+				/** @var array $keys The property keys, i.e. "post.user.profile" */
+				$keys       = explode('.', $field->path);
+
+				/** @var Model $source The current model; this will be updated as we step through the relations */
+				$source     = $model;
+
+				/** @var array $target An array of successful key relations, which is built up as we step through the relations */
+				$target     = [];
+
+				// debug
+				//pr('keys', $keys);
+
+				// Attempt to resolve all relationships from the "post.user.profile" string,
+				// by walking the keys one by one:
+				//
+				// - $source->post
+				// - $post->user
+				// - $user->profile
+				//
+				// Each time a relation is found:
+				//
+				// - update the $target array with the successful key
+				// - update the $source property with the relation
+				//
+				// If a relationship isn't found, exit early
+				foreach ($keys as $key)
+				{
+					// check if the property key 'posts' is in fact a method, i.e. posts()
+					// if so, it's probably an Eloquent relationship, that will return a Relation instance
+					if(method_exists($source, $key))
+					{
+						/** @var Relation $relation */
+						$relation = $source->$key();
+						if($relation instanceof Relation)
+						{
+							pr(get_class($relation));
+							$source     = $relation->getRelated();
+							$target     = array_merge($target, [$key]);
+						}
+						else
+						{
+							break;
+						}
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				// if any of the target path successfully resolved a relationship
+				if(count($target))
+				{
+					// update the Field instance with the successful relations
+					$field->relation    = implode('.', $target);
+					$field->type        = FieldMeta::RELATION;
+
+					// update the relations object with the correct path
+					array_set($relations, $field->relation, true);
+				}
+			}
+
+			// flatten nested $relations array into "dot.notation.paths"
+			$output = array_keys($this->flatten($relations));
+
+			// debug
+			//pd('results', ['relations' =>$relations, 'output' =>$output, 'fields' =>$fields]);
+
+			// return
+			return $output;
+
+		}
+
+		/**
 		 * Loads related items on a model
 		 *
 		 * @param   mixed       $data
 		 * @param   array       $relations
 		 */
-		public function loadRelated($data, array $relations)
+		public function loadRelated($data, array $relations = null)
 		{
+			// debug
+			pr('load related');
+
 			// get original data source
 			$items = $data instanceof AbstractPaginator
 				? $data->items()
@@ -268,13 +373,9 @@ class EloquentRepo extends AbstractRepo
 			// if we have at least one data item, look to eager load
 			if(count($items))
 			{
-				$item  = $items[0];
 				foreach($relations as $relation)
 				{
-					if( method_exists($item, $relation) && ! isset($item->$relation) )
-					{
-						$data->load($relation);
-					}
+					$data->load($relation);
 				}
 			}
 		}
@@ -306,5 +407,24 @@ class EloquentRepo extends AbstractRepo
 		{
 			return call_user_func_array([$this->builder, $method], array_slice(func_get_args(), 1));
 		}
+
+
+	// ------------------------------------------------------------------------------------------------
+	// UTILITIES
+
+		protected function flatten($array, $prefix = '')
+		{
+			$result = array();
+			foreach ($array as $key => $value) {
+				if (is_array($value)) {
+					$result = $result + $this->flatten($value, $prefix . $key . '.');
+				} else {
+					$result[$prefix . $key] = $value;
+				}
+			}
+
+			return $result;
+		}
+
 
 }
