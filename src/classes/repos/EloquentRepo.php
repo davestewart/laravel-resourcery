@@ -266,7 +266,6 @@ class EloquentRepo extends AbstractRepo
 		 *
 		 * @param   FieldMeta[]     $fields     An array of FieldMeta instances. The method uses the `path` property to work out existing relations
 		 * @return  array
-		 * @throws  InvalidRelationException
 		 */
 		public function getRelated(array $fields)
 		{
@@ -316,7 +315,7 @@ class EloquentRepo extends AbstractRepo
 						$relation = $source->$key();
 						if($relation instanceof Relation)
 						{
-							pr(get_class($relation));
+							//pr(get_class($relation));
 							$source     = $relation->getRelated();
 							$target     = array_merge($target, [$key]);
 						}
@@ -363,7 +362,7 @@ class EloquentRepo extends AbstractRepo
 		public function loadRelated($data, array $relations = null)
 		{
 			// debug
-			pr('load related');
+			// pr('load related');
 
 			// get original data source
 			$items = $data instanceof AbstractPaginator

@@ -6,14 +6,6 @@
 
 @section('content')
 
-    <nav class="navbar navbar">
-        <ul class="nav navbar-nav">
-            <li><a href="{!! URL::to("$route") !!}">View all {{ $plural }}</a></li>
-            <li><a href="{!! URL::to("$route/create") !!}">Create {{ $singular }}</a>
-        </ul>
-    </nav>
-
-
     <header>
             <h1>All {{ $plural }}</h1>
         </header>
