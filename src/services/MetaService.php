@@ -27,6 +27,11 @@ class MetaService
 		protected $meta;
 
 		/**
+		 * @var LangService
+		 */
+		protected $lang;
+
+		/**
 		 * A cached version of all expanded field properties
 		 *
 		 * @var array
@@ -59,14 +64,16 @@ class MetaService
 		/**
 		 * Initialize the Meta object
 		 *
-		 * @param ResourceMeta $meta
-		 * @param          $fields
-		 * @return $this
+		 * @param   ResourceMeta    $meta
+		 * @param   LangService     $lang
+		 * @param   array           $fields
+		 * @return  self
 		 */
-		public function initialize(ResourceMeta $meta, $fields = [])
+		public function initialize(ResourceMeta $meta, $lang, $fields = [])
 		{
 			// meta
 			$this->meta = $meta;
+			$this->lang = $lang;
 
 			// variables
 			$types = array_keys($fields);
@@ -135,10 +142,13 @@ class MetaService
 		 */
 		public function getLabel($name)
 		{
-			// need to involve LangService here
-			return array_key_exists($name, $this->meta->labels)
+			// get default label
+			$label = array_key_exists($name, $this->meta->labels)
 				? $this->meta->labels[$name]
 				: trim(ucwords(preg_replace('/[_\W]+/', ' ', $name)));
+
+			// get translation
+			return $this->lang->label($name, $label);
 		}
 
 		/**

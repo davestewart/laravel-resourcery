@@ -176,7 +176,7 @@ class CrudService
 			// services
 			$this->repo         = \App::make('CrudRepo')->initialize($meta->class);
 			$this->lang         = \App::make('CrudLangService')->initialize($meta);
-			$this->meta         = \App::make('MetaService')->initialize($meta, $this->repo->getFields());
+			$this->meta         = \App::make('MetaService')->initialize($meta, $this->lang, $this->repo->getFields());
 			$this->validator    = \App::make(ValidationService::class);
 
 			// route

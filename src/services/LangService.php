@@ -205,7 +205,9 @@ class LangService
 		public function label($name, $default = null)
 		{
 			$item       = $this->values['item'];
-			$default    = $default ?: "resourcery::labels.$item.$name";
+			$default    = $default === null
+							? "resourcery::labels.$item.$name"
+							: $default; 
 			return array_get($this->labels, $name, $default);
 		}
 	
