@@ -7,7 +7,7 @@
 	            @foreach($fields as /** @var davestewart\resourcery\classes\forms\Field */ $field)
 	            <td>{{ $field->label }}</td>
 	            @endforeach
-	            <td>Actions</td>
+	            <td>{{ $lang->text->actions }}</td>
 	        </tr>
 	    </thead>
 

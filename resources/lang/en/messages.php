@@ -32,7 +32,7 @@ return [
 	[
 		'index'         => 'View :Items',
 		'show'          => 'View :item',
-		'create'        => 'Create new :Item',
+		'create'        => 'Create :Item',
 		'edit'          => 'Edit :Item',
 		'search'        => 'Search :Items',
 		'results'       => ':Item search results',
