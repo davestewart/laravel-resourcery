@@ -255,7 +255,7 @@ class MetaService
 				else
 				{
 					$field->value   = ! in_array($meta->name, $this->meta->hidden)
-										? $this->getProperty($data, $meta->name)
+										? $this->getProperty($data, $meta->path)
 										: null;
 				}
 
@@ -385,7 +385,9 @@ class MetaService
 			// variables
 			$method     = 'controls_' . $action;
 			$controls   = $this->meta->controls;
-			$extra      = property_exists($this->meta, $method) ? $this->meta->$method : null;
+			$extra      = property_exists($this->meta, $method)
+							? $this->meta->$method
+							: null;
 
 			// merge or replace additional controls
 			if(is_array($extra))
@@ -430,34 +432,26 @@ class MetaService
 		 */
 		protected function getProperty($model, $prop)
 		{
+			// invalid property
 			if($prop == null)
 			{
 				throw new InvalidPropertyException($prop, $model);
 			}
 
-			if(is_string($prop))
+			// single property
+			if(strstr($prop, '.') === false)
 			{
-				// array[property]
-				if(strstr($prop, '[') !== FALSE)
-				{
-					preg_match_all('/[\w_]+/', $prop, $matches);
-					$prop = $matches[0];
-				}
-
-				// related.property
-				else if(strstr($prop, '.') !== FALSE)
-				{
-					$prop = explode('.', $prop);
-				}
-
-				// normal property
-				else
-				{
-					return $model->$prop;
-				}
+				return $model->$prop;
 			}
 
-			return array_reduce($prop, function($obj, $name){ return isset($obj->$name) ? $obj->$name : null; }, $model);
+			// path property
+			$path = explode('.', $prop);
+			return array_reduce($path, function($obj, $name)
+			{
+				return isset($obj->$name)
+					? $obj->$name
+					: null;
+			}, $model);
 		}
 
 }
