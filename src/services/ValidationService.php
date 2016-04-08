@@ -8,12 +8,21 @@ use Illuminate\Validation\Validator;
 /**
  * ValidationService
  *
- * Special validation class that essentially collates two sets of error
- * messages; one for the page and one for the controls
+ * Special validation class that essentially collates two sets of error messages;
+ * one which is form-centric, i.e. "The name field is required" and one which is
+ * field-centric, i.e. "This field is required".
  *
- * @property FieldValidator $field
- * @property Validator $page
- * @property array $errors
+ * The main form error messages are loaded from the standard application validation
+ * config, with the fields error messages being loaded by the FieldValidator instance
+ * from the package config.
+ * 
+ * The form validation instance is used as the main validation source until there is
+ * an error, then a fields validation instance is instantiated and run, with the sole
+ * purpose of generating field-centric error messages.
+ *
+ * @property FieldValidator $fields
+ * @property Validator      $form
+ * @property array          $errors
  */
 class ValidationService
 {
@@ -24,8 +33,8 @@ class ValidationService
 		/** @var LangService */
 		protected $lang;
 	
-		/** @var FieldValidator $field */
-		protected $field;
+		/** @var FieldValidator $fields */
+		protected $fields;
 		
 		/** @var Validator $page */
 		protected $page;
@@ -37,7 +46,7 @@ class ValidationService
 		public function initialize(LangService $lang, array $rules, array $messages, array $attributes)
 		{
 			$this->lang = $lang;
-			$this->page = $this->factory(Validator::class);
+			$this->form = $this->factory(Validator::class);
 			return $this;
 		}
 
@@ -47,19 +56,19 @@ class ValidationService
 	
 		public function setRules($value)
 		{
-			$this->page->setRules($value);
+			$this->form->setRules($value);
 			return $this;
 		}
 	
 		public function setMessages($value)
 		{
-			$this->page->setCustomMessages($value);
+			$this->form->setCustomMessages($value);
 			return $this;
 		}
 	
 		public function setAttributes($value)
 		{
-			$this->page->setAttributeNames($value);
+			$this->form->setAttributeNames($value);
 			return $this;
 		}
 
@@ -72,29 +81,31 @@ class ValidationService
 	 */
 	public function validate(array $input, array $rules)
 	{
-		// initialize page-level validation
-		if( ! $this->page )
+		// initialize form-level validation
+		if( ! $this->form )
 		{
-			$this->page = $this->factory(Validator::class);
-			$this->page->setRules($rules);
+			$this->form = $this->factory(Validator::class);
+			$this->setRules($rules);
 		}
 
 		// update validator
-		$this->page->setData($input);
+		$this->form->setData($input);
 
 		// validate
-		if($this->page->fails())
+		if($this->form->fails())
 		{
 			// initialize field-level validation
-			if( ! $this->field )
+			if( ! $this->fields )
 			{
-				$this->field = $this->factory(FieldValidator::class);
-				$this->field->setRules($rules);
+				$this->fields = $this->factory(FieldValidator::class);
 			}
 
 			// update validator
-			$this->field->setData($input);
-			$this->field->fails();
+			$this->fields->setRules($this->form->getRules());
+			$this->fields->setCustomMessages($this->form->getCustomMessages());
+			$this->fields->setAttributeNames($this->form->getCustomAttributes());
+			$this->fields->setData($input);
+			$this->fields->fails();
 
 			return false;
 		}
@@ -110,7 +121,7 @@ class ValidationService
 		}
 		if($name == 'errors')
 		{
-			return $this->page->errors();
+			return $this->form->errors();
 		}
 		
 	}
