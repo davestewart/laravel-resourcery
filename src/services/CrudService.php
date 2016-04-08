@@ -175,10 +175,10 @@ class CrudService
 		{
 			// services
 			$this->repo         = \App::make('CrudRepo')->initialize($meta->class);
-			$this->lang         = \App::make('CrudLangService')->initialize($meta);
+			$this->lang         = \App::make('CrudLangService')->initialize($meta->name, $meta->naming);
 			$this->meta         = \App::make('MetaService')->initialize($meta, $this->lang, $this->repo->getFields());
 			$this->validator    = \App::make(ValidationService::class);
-
+			
 			// route
 			if( ! $route )
 			{
@@ -416,12 +416,12 @@ class CrudService
 				$this->setStatus(false, $this->lang->status('invalid'));
 
 				// errors
-				$this->errors	= $this->validator->page->errors();
+				$this->errors	= $this->validator->form->errors();
 				Session::flash('crud.errors', $this->validator->field->errors());
 
 				// build response
 				$this->response = Redirect::back()
-					->withErrors($this->validator->page->errors())
+					->withErrors($this->validator->form->errors())
 					->withInput($this->getInput());
 			}
 

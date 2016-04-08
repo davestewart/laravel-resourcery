@@ -77,7 +77,6 @@ class ResourceMeta
 		[
 			'item'              => 'item',
 			'items'             => 'items',
-			'titleAttribute'    => 'id',
 		];
 
 
@@ -290,20 +289,6 @@ class ResourceMeta
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// ACCESSORS
-
-		/**
-		 * Gets a human-readable title for the model
-		 *
-		 * This method is called by the translation engine, when it comes across a :title placeholder
-		 *
-		 * @param $model
-		 * @return mixed
-		 */
-		public function getTitle($model)
-		{
-			$prop = $this->naming['titleAttribute'];
-			return @ $model->$prop;
-		}
 
 		/**
 		 * Gets a property on the ResourceMeta instance

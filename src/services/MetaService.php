@@ -233,7 +233,7 @@ class MetaService
 				// field name & label
 				$field->id              = $meta->id;
 				$field->name            = $meta->name;
-				$field->label           = $this->getLabel($meta->name);
+				$field->label           = $this->getLabel($meta->id);
 
 				// if we have a callback, call it
 				if($meta->callback && method_exists($this->meta, $meta->callback))
@@ -254,7 +254,7 @@ class MetaService
 				// otherwise, attempt to resolve a value, unless hidden
 				else
 				{
-					$field->value   = ! in_array($meta->name, $this->meta->hidden)
+					$field->value   = ! in_array($meta->id, $this->meta->hidden)
 										? $this->getProperty($data, $meta->path)
 										: null;
 				}
