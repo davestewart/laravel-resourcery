@@ -12,21 +12,6 @@
  */
 return [
 
-	// human-readable method names
-	'action' =>
-	[
-		'index'         => 'index',
-		'show'          => 'show',
-		'view'          => 'view',
-		'create'        => 'create',
-		'edit'          => 'edit',
-		'store'         => 'store',
-		'save'          => 'save',
-		'update'        => 'update',
-		'delete'        => 'delete',
-		'destroy'       => 'destroy',
-	],
-
 	// page titles
 	'title' =>
 	[
@@ -39,20 +24,32 @@ return [
 		'no_results'    => 'No results',
 	],
 
-	// buttons prompts
+	// human-readable prompts
 	'prompt' =>
 	[
-		// links / labels
 		'all'           => 'View all :Items',
 		'show'          => 'View :Item',
 		'create'        => 'Create :Item',
 		'edit'          => 'Edit :Item',
 		'delete'        => 'Delete :Item',
+	],
 
-		// controls
+	// imperative actions
+    'action' =>
+	[
+		// button
+		'create'        => 'Create',
+		'view'          => 'View',
+		'edit'          => 'Edit',
+		'delete'        => 'Delete',
+
+		// form
 		'submit'        => 'Submit',
 		'cancel'        => 'Cancel',
 		'back'          => 'Back',
+		'restart'       => 'Restart',
+
+		// ui element
 		'select'        => 'Select',
 		'choose'        => 'Choose',
 	],
@@ -63,7 +60,7 @@ return [
 		'delete'        => 'Are you sure you want to delete this :item?',
 		'deletes'       => 'Are you sure you want to delete these :items?',
 		'cancel'        => 'Are you sure you want to cancel?',
-		'back'          => 'Are you sure you want to want to go back?',
+		'back'          => 'Are you sure you want to go back?',
 		'restart'       => 'Are you sure you want to start again?',
     ],
 
