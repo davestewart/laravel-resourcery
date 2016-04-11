@@ -1,9 +1,7 @@
 
-	<a class="btn btn-xs btn-success" href="{!! URL::to("$route/$item->id") !!}">{{ $lang->action->view }}</a>
-    <a class="btn btn-xs btn-info" href="{!! URL::to("$route/$item->id/edit") !!}">{{ $lang->action->edit }}</a>
-
-    {!! Form::open(['url' => "$route/$item->id", 'style' => 'display:inline-block', 'id' => "form-$item->id"]) !!}
-        {!! Form::hidden('_method', 'DELETE') !!}
-        {!! Form::submit($lang->action->delete, array('class' => 'btn btn-xs btn-warning')) !!}
-    <script>$('#form-{{ $item->id }}').on('submit', function(){ return confirm('{!! $lang->confirm->delete !!}'); })</script>
-    {!! Form::close() !!}
+	<a href="{!! URL::to("$route/$item->id") !!}" class="btn btn-xs btn-success">{{ $lang->action('view') }}</a>
+    <a href="{!! URL::to("$route/$item->id/edit") !!}" class="btn btn-xs btn-info">{{ $lang->action('edit') }}</a>
+    <form method="POST" action="{!! URL::to("$route/$item->id") !!}" style="display:inline-block" onsubmit="onDelete(event, this)">
+        <input name="method" type="hidden" value="DELETE">
+        <input type="submit" value="{{ $lang->action('delete') }}" class="btn btn-xs btn-warning">
+    </form>
