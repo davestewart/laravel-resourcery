@@ -1,0 +1,40 @@
+<?php namespace {namespace};
+
+use davestewart\resourcery\classes\meta\ResourceMeta;
+
+class {class} extends ResourceMeta
+{
+	protected $class        = '{model}';
+
+	protected $related      = {related};
+
+	protected $naming =
+	[
+		'item'              => '{item}',
+		'items'             => '{items}',
+	];
+
+	protected $fields =
+	[
+		'index'             => ':fillable',
+		'create'            => ':fillable',
+		'show'              => ':fillable',
+		'edit'              => ':fillable',
+	];
+
+	protected $controls =
+	[
+		{controls},
+	];
+
+	protected $rules =
+	[
+		{rules}
+	];
+
+	public function __construct()
+	{
+		// set additional complex logic here
+	}
+
+}

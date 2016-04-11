@@ -1,0 +1,18 @@
+<?php namespace {namespace};
+
+use davestewart\resourcery\traits\ResourceryMethods;
+use {parentPath};
+use {modelPath};
+use {metaPath};
+
+class {class} extends {parentClass}
+{
+
+	use ResourceryMethods;
+
+	public function __construct()
+	{
+		$this->setup(new {metaClass}());
+	}
+
+}
