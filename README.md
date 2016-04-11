@@ -1,6 +1,6 @@
 # Laravel Resourcery
 
-## A flexible service layer to manage all aspects of a resource's lifecycle
+## A lightweight & flexible resource management system
 
 Resourcery is an integrated set of services, classes, views and language config that bridges the gap between CRUD-generation libraries and a full CMS.
 
