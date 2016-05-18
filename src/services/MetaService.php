@@ -145,7 +145,7 @@ class MetaService
 			// get default label
 			$label = array_key_exists($name, $this->meta->labels)
 				? $this->meta->labels[$name]
-				: trim(ucwords(preg_replace('/[_\W]+/', ' ', $name)));
+				: trim(ucwords(preg_replace('/[_\W]+/', ' ', preg_replace('/([a-z])([A-Z])/', '$1 $2', $name))));
 
 			// get translation
 			return $this->lang->label($name, $label);
