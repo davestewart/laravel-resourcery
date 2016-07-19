@@ -16,7 +16,7 @@ trait ResourceryMethods
 	// -----------------------------------------------------------------------------------------------------------------
 	// PROPERTIES
 
-		/** @var CrudService crud */
+		/** @var CrudService $crud */
 		protected $crud;
 
 

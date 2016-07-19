@@ -35,4 +35,15 @@
         <!-- bottom pagination -->
         @include($views->pagination)
 
+        <!-- on delete handler -->
+        <script>
+            function onDelete(event, form)
+            {
+                if (! confirm('{!! $lang->confirm->delete !!}') )
+                {
+                    event.preventDefault();
+                }
+            }
+        </script>
+
 @stop

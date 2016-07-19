@@ -417,11 +417,12 @@ class CrudService
 
 				// errors
 				$this->errors	= $this->validator->form->errors();
-				Session::flash('crud.errors', $this->validator->field->errors());
+				//vd($this);
+				Session::flash('crud.errors', $this->validator->fields->errors());
 
 				// build response
 				$this->response = Redirect::back()
-					->withErrors($this->validator->form->errors())
+					->withErrors($this->errors)
 					->withInput($this->getInput());
 			}
 
@@ -615,7 +616,7 @@ class CrudService
 		 */
 		public function getInput()
 		{
-			$input = array_merge([], $this->input);
+			$input = array_merge([], $this->input ?: Input::all());
 			array_forget($input, $this->meta->getMeta()->hidden);
 			return $input;
 		}
