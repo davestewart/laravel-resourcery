@@ -80,6 +80,8 @@ return [
 	// miscellaneous text
 	'text' =>
 	[
+		'field'          => 'Field',
+		'value'          => 'Value',
 		'actions'        => 'Actions',
 		'relations'      => 'Relations',
 	],

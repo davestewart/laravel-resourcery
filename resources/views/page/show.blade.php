@@ -8,16 +8,41 @@
 
     <h1>{{ $lang->title->show }}</h1>
 
-    <ul>
+    <table class="table table-striped table-bordered">
+
+        <!-- header -->
+        <thead>
+            <tr>
+                <th>{{ $lang->text->field }}</th>
+                <th>{{ $lang->text->value }}</th>
+            </tr>
+        </thead>
+
+        <!-- data -->
+        <tbody>
+
         @foreach($fields as $field)
 
-            <li id="field-{{ $field->name }}">
-                <strong>{{ $field->label }}: </strong>
-                <span>{{ is_object($field->value) ? print_r($field->value, 1) : $field->value }}</span>
-            </li>
+            <tr id="field-{{ $field->name }}">
+                <th>{{ $field->label }}</th>
+
+                @if(is_scalar($field->value) || is_null($field->value))
+                <td>{{ $field->value }}</td>
+                @else
+                <td class="pre">{!! print_r($field->value, 1) !!}</td>
+                @endif
+            </tr>
 
         @endforeach
 
-    </ul>
+        </tbody>
+
+    </table>
+
+    <style type="text/css">
+        .pre{
+            white-space:pre;
+        }
+    </style>
 
 @endsection

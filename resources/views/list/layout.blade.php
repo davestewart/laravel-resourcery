@@ -5,9 +5,9 @@
 	    <thead>
 	        <tr>
 	            @foreach($fields as /** @var davestewart\resourcery\classes\forms\Field */ $field)
-	            <td>{{ $field->label }}</td>
+	            <th>{{ $field->label }}</th>
 	            @endforeach
-	            <td>{{ $lang->text->actions }}</td>
+	            <th>{{ $lang->text->actions }}</th>
 	        </tr>
 	    </thead>
 
